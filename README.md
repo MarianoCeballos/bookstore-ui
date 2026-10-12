@@ -30,6 +30,8 @@ No identity-provider configuration is needed. Catalog browsing and book details 
 - `yarn sanitycheck` runs typecheck, lint, tests, and build.
 - `yarn api:generate` generates TypeScript API path types from `http://localhost:3001/openapi.json` or `API_SPEC_URL`.
 
+See [OpenAPI type generation](./docs/openapi-types.md) for how the API contract is converted into UI types, how to refresh them, and troubleshooting steps.
+
 ## Performance testing
 
 Run Lighthouse against a production build, not the Vite development server: development serves unminified modules and inflates JavaScript and load-time metrics. Stop `yarn dev`, then run:
