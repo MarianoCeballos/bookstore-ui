@@ -99,6 +99,14 @@ export default function BookDetailPage() {
 
   const isFavorite = favorites.some((item) => item.ID === book.ID);
   const reviews = reviewsData ?? [];
+  const bookMetadata = [
+    book.publisher,
+    book.publishedDate,
+    book.pageCount != null ? `${book.pageCount} pages` : undefined,
+    book.language,
+  ]
+    .filter((value) => value !== undefined && value !== '')
+    .join(' · ');
 
   return (
     <Container maxWidth="lg">
@@ -138,10 +146,11 @@ export default function BookDetailPage() {
               <Chip key={item} label={item} />
             ))}
           </Stack>
-          <Typography variant="body2" color="text.secondary">
-            {book.publisher} · {book.publishedDate} · {book.pageCount} pages ·{' '}
-            {book.language}
-          </Typography>
+          {bookMetadata && (
+            <Typography variant="body2" color="text.secondary">
+              {bookMetadata}
+            </Typography>
+          )}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
             <Button
               variant="contained"
