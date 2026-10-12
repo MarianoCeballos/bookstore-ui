@@ -10,19 +10,25 @@ export default function PaymentResultPage() {
   const status = params.get('status') ?? 'pending';
   const paymentId =
     params.get('payment_id') ?? params.get('collection_id') ?? '';
-  const [result, setResult] = useState<{ message: string; error: boolean } | null>(null);
+  const [result, setResult] = useState<{
+    message: string;
+    error: boolean;
+  } | null>(null);
 
   useEffect(() => {
     if (!paymentId) return;
     paymentsService
       .verify(paymentId)
-      .then((order) => setResult({
-        message: `Payment ${order.status}. Order #${order.ID} is in your purchase history.`,
-        error: false,
-      }))
+      .then((order) =>
+        setResult({
+          message: `Payment ${order.status}. Order #${order.ID} is in your purchase history.`,
+          error: false,
+        }),
+      )
       .catch(() => {
         setResult({
-          message: 'We could not verify this payment yet. Check your purchase history before retrying.',
+          message:
+            'We could not verify this payment yet. Check your purchase history before retrying.',
           error: true,
         });
       });
@@ -39,11 +45,18 @@ export default function PaymentResultPage() {
 
   return (
     <Container maxWidth="sm">
-      <Stack spacing={2} sx={{ py: 8, alignItems: 'center', textAlign: 'center' }}>
+      <Stack
+        spacing={2}
+        sx={{ py: 8, alignItems: 'center', textAlign: 'center' }}
+      >
         <Typography variant="h4">{t('paymentUpdate')}</Typography>
         <Alert severity={error ? 'warning' : 'success'}>{message}</Alert>
-        <Button component={Link} to="/history" variant="contained">{t('viewHistory')}</Button>
-        <Button component={Link} to="/books">{t('browse')}</Button>
+        <Button component={Link} to="/history" variant="contained">
+          {t('viewHistory')}
+        </Button>
+        <Button component={Link} to="/books">
+          {t('browse')}
+        </Button>
       </Stack>
     </Container>
   );

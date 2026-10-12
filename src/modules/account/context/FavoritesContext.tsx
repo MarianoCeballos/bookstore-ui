@@ -25,8 +25,12 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
   const value: FavoritesValue = {
     items: query.data ?? [],
     loading: query.isPending,
-    add: async (bookId) => { await mutation.mutateAsync({ bookId, add: true }); },
-    remove: async (bookId) => { await mutation.mutateAsync({ bookId, add: false }); },
+    add: async (bookId) => {
+      await mutation.mutateAsync({ bookId, add: true });
+    },
+    remove: async (bookId) => {
+      await mutation.mutateAsync({ bookId, add: false });
+    },
   };
   return (
     <FavoritesContext.Provider value={value}>
@@ -37,6 +41,7 @@ export function FavoritesProvider({ children }: PropsWithChildren) {
 
 export function useFavorites() {
   const value = useContext(FavoritesContext);
-  if (!value) throw new Error('useFavorites must be used within FavoritesProvider');
+  if (!value)
+    throw new Error('useFavorites must be used within FavoritesProvider');
   return value;
 }

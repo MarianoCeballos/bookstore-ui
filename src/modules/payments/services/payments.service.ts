@@ -2,7 +2,10 @@ import type { Order } from '@/interfaces/models';
 import http from '@/services/http';
 
 export const paymentsService = {
-  async checkout(gift: boolean, giftRecipient?: string): Promise<{
+  async checkout(
+    gift: boolean,
+    giftRecipient?: string,
+  ): Promise<{
     preferenceId: string;
     orderId: number;
   }> {

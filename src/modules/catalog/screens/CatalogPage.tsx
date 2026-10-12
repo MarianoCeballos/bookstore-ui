@@ -30,7 +30,11 @@ import bannerE from '@/assets/bannerE.jpg';
 type Search = NonNullable<paths['/books']['get']['parameters']['query']>;
 const banners = [banner, bannerB, bannerC, bannerD, bannerE];
 
-export default function CatalogPage({ featured = false }: { featured?: boolean }) {
+export default function CatalogPage({
+  featured = false,
+}: {
+  featured?: boolean;
+}) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get('search') ?? '';
@@ -81,20 +85,38 @@ export default function CatalogPage({ featured = false }: { featured?: boolean }
           <Box className="home-banner__controls">
             <IconButton
               aria-label={t('previousBanner')}
-              onClick={() => setBannerIndex((index) => (index - 1 + banners.length) % banners.length)}
-              sx={{ color: 'white', bgcolor: 'rgb(30 17 11 / 55%)', '&:hover': { bgcolor: 'rgb(30 17 11 / 78%)' } }}
+              onClick={() =>
+                setBannerIndex(
+                  (index) => (index - 1 + banners.length) % banners.length,
+                )
+              }
+              sx={{
+                color: 'white',
+                bgcolor: 'rgb(30 17 11 / 55%)',
+                '&:hover': { bgcolor: 'rgb(30 17 11 / 78%)' },
+              }}
             >
               <ChevronLeftIcon />
             </IconButton>
             <IconButton
               aria-label={t('nextBanner')}
-              onClick={() => setBannerIndex((index) => (index + 1) % banners.length)}
-              sx={{ color: 'white', bgcolor: 'rgb(30 17 11 / 55%)', '&:hover': { bgcolor: 'rgb(30 17 11 / 78%)' } }}
+              onClick={() =>
+                setBannerIndex((index) => (index + 1) % banners.length)
+              }
+              sx={{
+                color: 'white',
+                bgcolor: 'rgb(30 17 11 / 55%)',
+                '&:hover': { bgcolor: 'rgb(30 17 11 / 78%)' },
+              }}
             >
               <ChevronRightIcon />
             </IconButton>
           </Box>
-          <Stack direction="row" spacing={1} sx={{ py: 1, justifyContent: 'center' }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ py: 1, justifyContent: 'center' }}
+          >
             {banners.map((banner, index) => (
               <Button
                 key={banner}
@@ -125,7 +147,13 @@ export default function CatalogPage({ featured = false }: { featured?: boolean }
         )}
         {sections.map(([title, books]) => (
           <Box key={title} className="home-section">
-            <Typography variant="h4" className="home-section__title" sx={{ mb: 2 }}>{title}</Typography>
+            <Typography
+              variant="h4"
+              className="home-section__title"
+              sx={{ mb: 2 }}
+            >
+              {title}
+            </Typography>
             <BookGrid books={books} loading={homeQuery.isPending} horizontal />
           </Box>
         ))}
@@ -140,7 +168,12 @@ export default function CatalogPage({ featured = false }: { featured?: boolean }
 
   return (
     <Container maxWidth="xl" className="catalog-panel">
-      <Typography variant="h3" sx={{ mb: 1, color: '#674533', fontFamily: 'Roboto, sans-serif' }}>{t('explore')}</Typography>
+      <Typography
+        variant="h3"
+        sx={{ mb: 1, color: '#674533', fontFamily: 'Roboto, sans-serif' }}
+      >
+        {t('explore')}
+      </Typography>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
         {t('catalogDescription')}
       </Typography>
@@ -149,16 +182,15 @@ export default function CatalogPage({ featured = false }: { featured?: boolean }
           <Typography color="text.secondary">
             {t('resultsFor', { term: search.trim() })}
           </Typography>
-          <Button size="small" onClick={() => setSearchParams({}, { replace: true })}>
+          <Button
+            size="small"
+            onClick={() => setSearchParams({}, { replace: true })}
+          >
             {t('clearSearch')}
           </Button>
         </Stack>
       )}
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={2}
-        sx={{ mb: 4 }}
-      >
+      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 4 }}>
         <FormControl sx={{ flex: 1 }}>
           <InputLabel id="author-label">{t('author')}</InputLabel>
           <Select
@@ -172,7 +204,9 @@ export default function CatalogPage({ featured = false }: { featured?: boolean }
           >
             <MenuItem value="">{t('allAuthors')}</MenuItem>
             {authors.map((item) => (
-              <MenuItem value={item.name} key={item.ID}>{item.name}</MenuItem>
+              <MenuItem value={item.name} key={item.ID}>
+                {item.name}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -189,7 +223,9 @@ export default function CatalogPage({ featured = false }: { featured?: boolean }
           >
             <MenuItem value="">{t('allCategories')}</MenuItem>
             {categories.map((item) => (
-              <MenuItem value={item.category} key={item.ID}>{item.category}</MenuItem>
+              <MenuItem value={item.category} key={item.ID}>
+                {item.category}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>

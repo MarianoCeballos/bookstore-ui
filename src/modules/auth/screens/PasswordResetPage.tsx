@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Alert, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Button,
+  Container,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { toast } from 'sonner';
 import { authService } from '@/modules/auth/services/auth.service';
 import { useTranslation } from 'react-i18next';
@@ -55,27 +63,69 @@ export default function PasswordResetPage() {
   return (
     <Container maxWidth="sm">
       <Paper variant="outlined" sx={{ p: { xs: 3, sm: 5 } }}>
-        <Typography variant="h4" sx={{ mb: 1 }}>{t('resetPassword')}</Typography>
+        <Typography variant="h4" sx={{ mb: 1 }}>
+          {t('resetPassword')}
+        </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           {t('resetInstructions')}
         </Typography>
-        {notice && <Alert severity="info" sx={{ mb: 2 }}>{notice}</Alert>}
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {notice && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            {notice}
+          </Alert>
+        )}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         <Stack spacing={2}>
-          <TextField label={t('usernameOrEmail')} value={user} onChange={(event) => setUser(event.target.value)} />
-          <Button variant="outlined" onClick={requestCode} disabled={!user.trim()}>
+          <TextField
+            label={t('usernameOrEmail')}
+            value={user}
+            onChange={(event) => setUser(event.target.value)}
+          />
+          <Button
+            variant="outlined"
+            onClick={requestCode}
+            disabled={!user.trim()}
+          >
             {t('sendReset')}
           </Button>
-          <TextField label={t('accountId')} value={ID} onChange={(event) => setID(event.target.value)} />
-          <TextField label={t('emailCode')} value={resetCode} onChange={(event) => setResetCode(event.target.value)} />
-          <Button variant="outlined" onClick={verifyCode} disabled={!ID || !resetCode}>
+          <TextField
+            label={t('accountId')}
+            value={ID}
+            onChange={(event) => setID(event.target.value)}
+          />
+          <TextField
+            label={t('emailCode')}
+            value={resetCode}
+            onChange={(event) => setResetCode(event.target.value)}
+          />
+          <Button
+            variant="outlined"
+            onClick={verifyCode}
+            disabled={!ID || !resetCode}
+          >
             {t('verifyCode')}
           </Button>
           {resetToken && (
             <>
-              <TextField label={t('newPassword')} type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
-              <TextField label={t('confirmPassword')} type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} />
-              <Button variant="contained" onClick={savePassword}>{t('savePassword')}</Button>
+              <TextField
+                label={t('newPassword')}
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+              <TextField
+                label={t('confirmPassword')}
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+              />
+              <Button variant="contained" onClick={savePassword}>
+                {t('savePassword')}
+              </Button>
             </>
           )}
         </Stack>

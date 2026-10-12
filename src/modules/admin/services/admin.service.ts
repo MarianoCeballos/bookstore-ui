@@ -1,4 +1,10 @@
-import type { AdminStats, Book, Order, Review, User } from '@/interfaces/models';
+import type {
+  AdminStats,
+  Book,
+  Order,
+  Review,
+  User,
+} from '@/interfaces/models';
 import http from '@/services/http';
 
 export const adminService = {

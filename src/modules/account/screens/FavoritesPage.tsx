@@ -10,13 +10,17 @@ export default function FavoritesPage() {
   const { t } = useTranslation();
   return (
     <Container maxWidth="xl">
-      <Typography variant="h3" sx={{ mb: 3 }}>{t('favoritesTitle')}</Typography>
+      <Typography variant="h3" sx={{ mb: 3 }}>
+        {t('favoritesTitle')}
+      </Typography>
       {!loading && !items.length && (
         <Alert severity="info" sx={{ mb: 3 }}>
           {t('emptyFavorites')}
         </Alert>
       )}
-      {loading ? <BookGrid loading /> : (
+      {loading ? (
+        <BookGrid loading />
+      ) : (
         <Box className="book-grid">
           {items.map((book) => (
             <Box key={book.ID}>
@@ -25,7 +29,11 @@ export default function FavoritesPage() {
                 color="error"
                 fullWidth
                 sx={{ mt: 1 }}
-                onClick={() => remove(book.ID).then(() => toast.success('Removed from favorites.')).catch(() => toast.error('The book could not be removed.'))}
+                onClick={() =>
+                  remove(book.ID)
+                    .then(() => toast.success('Removed from favorites.'))
+                    .catch(() => toast.error('The book could not be removed.'))
+                }
               >
                 {t('removeFromFavorites')}
               </Button>

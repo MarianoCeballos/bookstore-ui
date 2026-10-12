@@ -1,6 +1,11 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useQuery,
+  UseQueryResult,
+} from '@tanstack/react-query';
 import type { paths } from '@/interfaces/generated/api';
 import { booksService } from '@/modules/catalog/services/books.service';
+import { Book } from '@/interfaces/models';
 
 type Search = NonNullable<paths['/books']['get']['parameters']['query']>;
 
@@ -14,7 +19,7 @@ export function useBooks(params: Search, enabled = true) {
   });
 }
 
-export function useBook(id: number) {
+export function useBook(id: number): UseQueryResult<Book> {
   return useQuery({
     queryKey: ['books', id],
     queryFn: () => booksService.get(id),

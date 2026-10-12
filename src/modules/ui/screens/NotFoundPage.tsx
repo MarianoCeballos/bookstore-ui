@@ -9,7 +9,9 @@ export default function NotFoundPage() {
       <Stack spacing={2} sx={{ py: 8, alignItems: 'center' }}>
         <Typography variant="h2">404</Typography>
         <Typography variant="h5">{t('notFound')}</Typography>
-        <Button component={Link} to="/" variant="contained">{t('backHome')}</Button>
+        <Button component={Link} to="/" variant="contained">
+          {t('backHome')}
+        </Button>
       </Stack>
     </Container>
   );

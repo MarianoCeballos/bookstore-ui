@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { Alert, Button, Container, Paper, Stack, TextField, Typography } from '@mui/material';
+import {
+  Alert,
+  Button,
+  Container,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -39,16 +47,46 @@ export default function ContactPage() {
   return (
     <Container maxWidth="sm">
       <Paper variant="outlined" sx={{ p: { xs: 3, sm: 5 } }}>
-        <Typography variant="h4" sx={{ mb: 1 }}>{t('contactTitle')}</Typography>
+        <Typography variant="h4" sx={{ mb: 1 }}>
+          {t('contactTitle')}
+        </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           {t('contactDescription')}
         </Typography>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         <Stack component="form" onSubmit={submit} className="form-stack">
-          <TextField label={t('sender')} type="email" {...form.register('sender')} error={Boolean(form.formState.errors.sender)} helperText={form.formState.errors.sender?.message} />
-          <TextField label={t('subject')} {...form.register('title')} error={Boolean(form.formState.errors.title)} helperText={form.formState.errors.title?.message} />
-          <TextField label={t('message')} multiline minRows={5} {...form.register('message')} error={Boolean(form.formState.errors.message)} helperText={form.formState.errors.message?.message} />
-          <Button type="submit" variant="contained" disabled={form.formState.isSubmitting}>{t('sendMessage')}</Button>
+          <TextField
+            label={t('sender')}
+            type="email"
+            {...form.register('sender')}
+            error={Boolean(form.formState.errors.sender)}
+            helperText={form.formState.errors.sender?.message}
+          />
+          <TextField
+            label={t('subject')}
+            {...form.register('title')}
+            error={Boolean(form.formState.errors.title)}
+            helperText={form.formState.errors.title?.message}
+          />
+          <TextField
+            label={t('message')}
+            multiline
+            minRows={5}
+            {...form.register('message')}
+            error={Boolean(form.formState.errors.message)}
+            helperText={form.formState.errors.message?.message}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={form.formState.isSubmitting}
+          >
+            {t('sendMessage')}
+          </Button>
         </Stack>
       </Paper>
     </Container>

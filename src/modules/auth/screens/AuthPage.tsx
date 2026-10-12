@@ -59,8 +59,8 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
 
   const finishLogin = () => {
     const destination =
-      (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ??
-      '/';
+      (location.state as { from?: { pathname?: string } } | null)?.from
+        ?.pathname ?? '/';
     navigate(destination, { replace: true });
   };
 
@@ -81,7 +81,9 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
       toast.success('Check your email to confirm your account.');
       navigate('/login');
     } catch {
-      setError('We could not create the account. Check your details and try again.');
+      setError(
+        'We could not create the account. Check your details and try again.',
+      );
     }
   });
 
@@ -92,32 +94,98 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
           {register ? t('registerTitle') : t('signInTitle')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
-          {register
-            ? t('registerDescription')
-            : t('signInDescription')}
+          {register ? t('registerDescription') : t('signInDescription')}
         </Typography>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         {register ? (
-          <Stack component="form" onSubmit={submitRegister} className="form-stack">
-            <TextField label={t('username')} {...registerForm.register('username')} error={Boolean(registerForm.formState.errors.username)} helperText={registerForm.formState.errors.username?.message} />
-            <TextField label={t('email')} type="email" {...registerForm.register('email')} error={Boolean(registerForm.formState.errors.email)} helperText={registerForm.formState.errors.email?.message} />
+          <Stack
+            component="form"
+            onSubmit={submitRegister}
+            className="form-stack"
+          >
+            <TextField
+              label={t('username')}
+              {...registerForm.register('username')}
+              error={Boolean(registerForm.formState.errors.username)}
+              helperText={registerForm.formState.errors.username?.message}
+            />
+            <TextField
+              label={t('email')}
+              type="email"
+              {...registerForm.register('email')}
+              error={Boolean(registerForm.formState.errors.email)}
+              helperText={registerForm.formState.errors.email?.message}
+            />
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <TextField fullWidth label={t('firstName')} {...registerForm.register('name')} error={Boolean(registerForm.formState.errors.name)} helperText={registerForm.formState.errors.name?.message} />
-              <TextField fullWidth label={t('lastName')} {...registerForm.register('surname')} error={Boolean(registerForm.formState.errors.surname)} helperText={registerForm.formState.errors.surname?.message} />
+              <TextField
+                fullWidth
+                label={t('firstName')}
+                {...registerForm.register('name')}
+                error={Boolean(registerForm.formState.errors.name)}
+                helperText={registerForm.formState.errors.name?.message}
+              />
+              <TextField
+                fullWidth
+                label={t('lastName')}
+                {...registerForm.register('surname')}
+                error={Boolean(registerForm.formState.errors.surname)}
+                helperText={registerForm.formState.errors.surname?.message}
+              />
             </Stack>
-            <TextField label={t('password')} type="password" {...registerForm.register('password')} error={Boolean(registerForm.formState.errors.password)} helperText={registerForm.formState.errors.password?.message ?? 'Use at least 12 characters.'} />
-            <Button type="submit" variant="contained" size="large" disabled={registerForm.formState.isSubmitting}>
+            <TextField
+              label={t('password')}
+              type="password"
+              {...registerForm.register('password')}
+              error={Boolean(registerForm.formState.errors.password)}
+              helperText={
+                registerForm.formState.errors.password?.message ??
+                'Use at least 12 characters.'
+              }
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={registerForm.formState.isSubmitting}
+            >
               {t('createAccount')}
             </Button>
           </Stack>
         ) : (
           <Stack component="form" onSubmit={submitLogin} className="form-stack">
-            <TextField label={t('usernameOrEmail')} autoComplete="username" {...loginForm.register('username')} error={Boolean(loginForm.formState.errors.username)} helperText={loginForm.formState.errors.username?.message} />
-            <TextField label={t('password')} type="password" autoComplete="current-password" {...loginForm.register('password')} error={Boolean(loginForm.formState.errors.password)} helperText={loginForm.formState.errors.password?.message} />
-            <Button type="submit" variant="contained" size="large" disabled={loginForm.formState.isSubmitting}>
+            <TextField
+              label={t('usernameOrEmail')}
+              autoComplete="username"
+              {...loginForm.register('username')}
+              error={Boolean(loginForm.formState.errors.username)}
+              helperText={loginForm.formState.errors.username?.message}
+            />
+            <TextField
+              label={t('password')}
+              type="password"
+              autoComplete="current-password"
+              {...loginForm.register('password')}
+              error={Boolean(loginForm.formState.errors.password)}
+              helperText={loginForm.formState.errors.password?.message}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={loginForm.formState.isSubmitting}
+            >
               {t('signIn')}
             </Button>
-            <MuiLink component={Link} to="/password-reset" underline="hover" sx={{ textAlign: 'right' }}>
+            <MuiLink
+              component={Link}
+              to="/password-reset"
+              underline="hover"
+              sx={{ textAlign: 'right' }}
+            >
               {t('forgotPassword')}
             </MuiLink>
           </Stack>

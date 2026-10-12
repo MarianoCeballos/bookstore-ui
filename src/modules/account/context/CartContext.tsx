@@ -25,8 +25,12 @@ export function CartProvider({ children }: PropsWithChildren) {
   const value: CartValue = {
     items: query.data ?? [],
     loading: query.isPending,
-    add: async (bookId) => { await mutation.mutateAsync({ bookId, add: true }); },
-    remove: async (bookId) => { await mutation.mutateAsync({ bookId, add: false }); },
+    add: async (bookId) => {
+      await mutation.mutateAsync({ bookId, add: true });
+    },
+    remove: async (bookId) => {
+      await mutation.mutateAsync({ bookId, add: false });
+    },
   };
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

@@ -32,7 +32,10 @@ export const authService = {
     const { data } = await http.post('/emails/reset', { user });
     return data;
   },
-  async confirmReset(ID: number, resetCode: string): Promise<{ data: { resetToken: string }; message: string }> {
+  async confirmReset(
+    ID: number,
+    resetCode: string,
+  ): Promise<{ data: { resetToken: string }; message: string }> {
     const { data } = await http.post('/confirm/reset', { ID, resetCode });
     return data;
   },

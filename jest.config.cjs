@@ -3,15 +3,18 @@ module.exports = {
   roots: ['<rootDir>/src'],
   testMatch: ['**/*.test.ts', '**/*.test.tsx'],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', {
-      tsconfig: {
-        module: 'CommonJS',
-        moduleResolution: 'Node',
-        jsx: 'react-jsx',
-        esModuleInterop: true,
-        strict: true,
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          module: 'CommonJS',
+          moduleResolution: 'Node',
+          jsx: 'react-jsx',
+          esModuleInterop: true,
+          strict: true,
+        },
       },
-    }],
+    ],
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

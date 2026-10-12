@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Autocomplete, Box, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
+import {
+  Autocomplete,
+  Box,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +21,8 @@ export default function SearchBox() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const urlSearch = location.pathname === '/books' ? (searchParams.get('search') ?? '') : '';
+  const urlSearch =
+    location.pathname === '/books' ? (searchParams.get('search') ?? '') : '';
   const [input, setInput] = useState(urlSearch);
   const [syncedUrl, setSyncedUrl] = useState(urlSearch);
   if (syncedUrl !== urlSearch) {
@@ -41,7 +49,9 @@ export default function SearchBox() {
       fullWidth
       options={options}
       filterOptions={(items) => items}
-      getOptionLabel={(option) => (typeof option === 'string' ? option : option.title)}
+      getOptionLabel={(option) =>
+        typeof option === 'string' ? option : option.title
+      }
       inputValue={input}
       onInputChange={(_, value, reason) => {
         if (reason !== 'reset') setInput(value);
@@ -52,12 +62,23 @@ export default function SearchBox() {
         else navigate(`/books/${value.ID}`);
       }}
       renderOption={({ key, ...props }, option) => (
-        <Box component="li" key={key} {...props} sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>
+        <Box
+          component="li"
+          key={key}
+          {...props}
+          sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}
+        >
           <Box
             component="img"
             src={option.image}
             alt=""
-            sx={{ width: 40, height: 56, objectFit: 'cover', borderRadius: 0.5, flexShrink: 0 }}
+            sx={{
+              width: 40,
+              height: 56,
+              objectFit: 'cover',
+              borderRadius: 0.5,
+              flexShrink: 0,
+            }}
           />
           <Box sx={{ minWidth: 0 }}>
             <Typography noWrap>{option.title}</Typography>
@@ -75,13 +96,20 @@ export default function SearchBox() {
           placeholder={t('search')}
           slotProps={{
             ...params.slotProps,
-            htmlInput: { ...params.slotProps.htmlInput, 'aria-label': t('search') },
+            htmlInput: {
+              ...params.slotProps.htmlInput,
+              'aria-label': t('search'),
+            },
             input: {
               ...params.slotProps.input,
               endAdornment: (
                 <>
                   <InputAdornment position="end">
-                    <IconButton edge="end" aria-label={t('search')} onClick={() => submit(input)}>
+                    <IconButton
+                      edge="end"
+                      aria-label={t('search')}
+                      onClick={() => submit(input)}
+                    >
                       <SearchIcon />
                     </IconButton>
                   </InputAdornment>
@@ -93,7 +121,12 @@ export default function SearchBox() {
         />
       )}
       sx={{
-        '& .MuiOutlinedInput-root': { height: 38, bgcolor: '#fffaf0', borderRadius: 1, py: 0 },
+        '& .MuiOutlinedInput-root': {
+          height: 38,
+          bgcolor: '#fffaf0',
+          borderRadius: 1,
+          py: 0,
+        },
         '& .MuiAutocomplete-popupIndicator': { display: 'none' },
       }}
     />
