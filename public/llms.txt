@@ -1,0 +1,8 @@
+# Bookstore
+
+Discover and collect books from the Bookstore catalog.
+
+## Pages
+
+- [Book catalog](/books)
+- [Home](/)

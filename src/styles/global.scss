@@ -1,0 +1,130 @@
+:root {
+  color-scheme: light;
+  font-family: 'Poppins', 'Roboto', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #dfc99a;
+  color: #1e110b;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  background: #dfc99a url('../assets/BKG_BookStore2.png') repeat;
+}
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.book-grid--horizontal {
+  display: flex;
+  overflow-x: auto;
+  padding: 2px 2px 16px;
+  scroll-snap-type: x mandatory;
+}
+
+.book-grid--horizontal > * {
+  flex: 0 0 min(420px, 86vw);
+  scroll-snap-align: start;
+}
+
+.home-banner {
+  position: relative;
+  overflow: hidden;
+  border: 5px solid #674533;
+  border-radius: 4px;
+  background: #1e110b;
+  box-shadow: 0 8px 24px rgb(30 17 11 / 25%);
+}
+
+.home-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: clamp(220px, 36vw, 460px);
+  object-fit: contain;
+  object-position: center;
+}
+
+.home-banner__controls {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  pointer-events: none;
+}
+
+.home-banner__controls button {
+  pointer-events: auto;
+}
+
+.home-section {
+  margin-top: 42px;
+  padding: 22px;
+  border: 1px solid rgb(103 69 51 / 28%);
+  border-radius: 6px;
+  background: rgb(255 249 235 / 88%);
+  box-shadow: 0 4px 14px rgb(30 17 11 / 10%);
+}
+
+.home-section__title {
+  color: #674533;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+}
+
+.catalog-panel {
+  padding: clamp(18px, 3vw, 32px);
+  border: 1px solid rgb(103 69 51 / 28%);
+  border-radius: 6px;
+  background: rgb(255 249 235 / 92%);
+}
+
+.book-card {
+  border-color: rgb(103 69 51 / 32%) !important;
+  border-radius: 5px !important;
+  background: #fffaf0 !important;
+  color: #1e110b;
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+
+.book-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgb(30 17 11 / 16%);
+}
+
+.book-card__cover {
+  width: 118px;
+  min-width: 118px;
+  height: 176px;
+  object-fit: contain;
+  background: #efe3ca;
+}
+
+@media (max-width: 700px) {
+  .book-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-section {
+    margin-top: 26px;
+    padding: 16px 12px;
+  }
+
+  .home-banner {
+    border-width: 3px;
+  }
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
