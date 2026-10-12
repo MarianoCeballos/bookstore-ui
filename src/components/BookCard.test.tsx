@@ -16,8 +16,10 @@ const book: Book = {
   pageCount: 250,
   rating: 4.5,
   language: 'English',
-  avgReadingTime: 200,
+  avgReadingTime: '200',
   soldCopies: 3,
+  reviews: [],
+  createdAt: '2025-01-01T00:00:00.000Z',
 };
 
 describe('BookCard', () => {
@@ -28,7 +30,10 @@ describe('BookCard', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText('A Story to Keep')).toHaveAttribute('href', '/books/7');
+    expect(screen.getByText('A Story to Keep')).toHaveAttribute(
+      'href',
+      '/books/7',
+    );
     expect(screen.getByText('$12.50')).toBeInTheDocument();
     expect(screen.getByAltText('Cover of A Story to Keep')).toBeInTheDocument();
   });

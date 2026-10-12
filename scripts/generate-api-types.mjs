@@ -4,9 +4,10 @@ import { resolve } from 'node:path';
 
 const source = process.env.API_SPEC_URL ?? 'http://localhost:3001/openapi.json';
 const output = 'src/interfaces/generated/api.ts';
-const spec = source.startsWith('http://') || source.startsWith('https://')
-  ? source
-  : JSON.parse(await readFile(resolve(process.cwd(), source), 'utf8'));
+const spec =
+  source.startsWith('http://') || source.startsWith('https://')
+    ? source
+    : JSON.parse(await readFile(resolve(process.cwd(), source), 'utf8'));
 
 function removeDocumentation(value) {
   if (Array.isArray(value)) {

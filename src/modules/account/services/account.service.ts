@@ -1,13 +1,21 @@
-import type { Book, Order, Review, User } from '@/interfaces/models';
+import type {
+  BookReviews,
+  CartBook,
+  CreateReviewInput,
+  FavoriteBook,
+  Order,
+  Review,
+  User,
+} from '@/interfaces/models';
 import http from '@/services/http';
 
 export const accountService = {
-  async favorites(id: number): Promise<Book[]> {
-    const { data } = await http.get<Book[]>(`/users/${id}/favorites`);
+  async favorites(id: number): Promise<FavoriteBook[]> {
+    const { data } = await http.get<FavoriteBook[]>(`/users/${id}/favorites`);
     return data;
   },
-  async cart(id: number): Promise<Book[]> {
-    const { data } = await http.get<Book[]>(`/users/${id}/cart`);
+  async cart(id: number): Promise<CartBook[]> {
+    const { data } = await http.get<CartBook[]>(`/users/${id}/cart`);
     return data;
   },
   async setBookRelation(
@@ -24,18 +32,11 @@ export const accountService = {
     const { data } = await http.get<Order[]>('/payments');
     return data;
   },
-  async reviews(bookId: number): Promise<Book & { reviews: Review[] }> {
-    const { data } = await http.get<Book & { reviews: Review[] }>(
-      `/reviews/book/${bookId}`,
-    );
+  async reviews(bookId: number): Promise<BookReviews> {
+    const { data } = await http.get<BookReviews>(`/reviews/book/${bookId}`);
     return data;
   },
-  async createReview(input: {
-    title: string;
-    review: string;
-    rating: number;
-    bookID: number;
-  }): Promise<void> {
+  async createReview(input: CreateReviewInput): Promise<void> {
     await http.post('/reviews', input);
   },
   async reportReview(id: number): Promise<void> {

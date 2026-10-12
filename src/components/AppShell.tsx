@@ -66,7 +66,10 @@ export default function AppShell() {
         }}
       >
         <Container maxWidth="xl">
-          <Toolbar disableGutters sx={{ gap: { xs: 1, md: 2 }, minHeight: '58px !important' }}>
+          <Toolbar
+            disableGutters
+            sx={{ gap: { xs: 1, md: 2 }, minHeight: '58px !important' }}
+          >
             <Box
               component={Link}
               to="/"
@@ -79,13 +82,29 @@ export default function AppShell() {
                 flexShrink: 0,
               }}
             >
-              <Box component="img" src={bookLogo} alt="" sx={{ width: 39, height: 39 }} />
-              <Typography sx={{ fontFamily: 'Roboto, sans-serif', fontSize: 18, fontWeight: 700 }}>
+              <Box
+                component="img"
+                src={bookLogo}
+                alt=""
+                sx={{ width: 39, height: 39 }}
+              />
+              <Typography
+                sx={{
+                  fontFamily: 'Roboto, sans-serif',
+                  fontSize: 18,
+                  fontWeight: 700,
+                }}
+              >
                 Bookstore
               </Typography>
             </Box>
             <Box
-              sx={{ flex: 1, maxWidth: 330, ml: { xs: 0, md: 2 }, display: { xs: 'none', sm: 'block' } }}
+              sx={{
+                flex: 1,
+                maxWidth: 330,
+                ml: { xs: 0, md: 2 },
+                display: { xs: 'none', sm: 'block' },
+              }}
             >
               <SearchBox />
             </Box>
@@ -100,13 +119,21 @@ export default function AppShell() {
                   to={link.to}
                   key={link.to}
                   color="inherit"
-                  endIcon={link.count ? <Typography variant="caption">{link.count}</Typography> : undefined}
+                  endIcon={
+                    link.count ? (
+                      <Typography variant="caption">{link.count}</Typography>
+                    ) : undefined
+                  }
                 >
                   {link.label}
                 </Button>
               ))}
             </Stack>
-            <Button onClick={changeLanguage} color="inherit" sx={{ minWidth: 42, px: 0.5 }}>
+            <Button
+              onClick={changeLanguage}
+              color="inherit"
+              sx={{ minWidth: 42, px: 0.5 }}
+            >
               {language.toUpperCase()}
             </Button>
             {user ? (
@@ -150,7 +177,11 @@ export default function AppShell() {
             <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 0.25 }}>
               {user && (
                 <>
-                  <IconButton aria-label="Favorite" component={Link} to="/favorites">
+                  <IconButton
+                    aria-label="Favorite"
+                    component={Link}
+                    to="/favorites"
+                  >
                     <FavoriteBorderIcon />
                   </IconButton>
                   <IconButton aria-label="Cart" component={Link} to="/cart">
@@ -165,7 +196,10 @@ export default function AppShell() {
       <Box component="main" sx={{ flex: 1, py: { xs: 2, md: 3 } }}>
         <Outlet />
       </Box>
-      <Box component="footer" sx={{ py: 2, bgcolor: '#674533e6', color: '#fffaf0' }}>
+      <Box
+        component="footer"
+        sx={{ py: 2, bgcolor: '#674533e6', color: '#fffaf0' }}
+      >
         <Container maxWidth="xl">
           <Typography variant="body2">
             © {new Date().getFullYear()} Bookstore · Stories worth keeping.

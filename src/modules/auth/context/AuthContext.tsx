@@ -22,7 +22,11 @@ interface AuthValue {
   loading: boolean;
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
-  updateProfile: (input: { name: string; surname: string; email: string }) => Promise<void>;
+  updateProfile: (input: {
+    name: string;
+    surname: string;
+    email: string;
+  }) => Promise<void>;
   logout: () => void;
 }
 
@@ -40,13 +44,15 @@ function asUser(session: Session): User {
     admin: session.admin,
     enabled: session.enabled,
     banned: session.banned,
+    suspendedTimes: session.suspendedTimes,
+    createdAt: session.createdAt,
   };
 }
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(
-    () => Boolean(localStorage.getItem('bookstore.token')),
+  const [loading, setLoading] = useState(() =>
+    Boolean(localStorage.getItem('bookstore.token')),
   );
 
   const acceptSession = useCallback((session: Session) => {
@@ -62,7 +68,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     const onUnauthorized = () => logout();
     window.addEventListener('bookstore:unauthorized', onUnauthorized);
-    return () => window.removeEventListener('bookstore:unauthorized', onUnauthorized);
+    return () =>
+      window.removeEventListener('bookstore:unauthorized', onUnauthorized);
   }, [logout]);
 
   useEffect(() => {
@@ -85,7 +92,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       updateProfile: async (input) => {
         if (!user) throw new Error('Sign in to update your profile');
         await accountService.updateUser(user.ID, input);
-        setUser((current) => current ? { ...current, ...input } : current);
+        setUser((current) => (current ? { ...current, ...input } : current));
       },
       logout,
     }),

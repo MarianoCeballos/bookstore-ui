@@ -30,7 +30,9 @@ export default function BookGrid({
   if (!books?.length) return <Typography>{t('noBooks')}</Typography>;
   return (
     <Box className={gridClass}>
-      {books.map((book) => <BookCard key={book.ID} book={book} />)}
+      {books.map((book) => (
+        <BookCard key={book.ID} book={book} />
+      ))}
     </Box>
   );
 }

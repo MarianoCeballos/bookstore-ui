@@ -4,18 +4,30 @@ import AppShell from '@/components/AppShell';
 import RequireAuth from '@/components/RequireAuth';
 
 const CatalogPage = lazy(() => import('@/modules/catalog/screens/CatalogPage'));
-const BookDetailPage = lazy(() => import('@/modules/catalog/screens/BookDetailPage'));
+const BookDetailPage = lazy(
+  () => import('@/modules/catalog/screens/BookDetailPage'),
+);
 const AuthPage = lazy(() => import('@/modules/auth/screens/AuthPage'));
 const ConfirmPage = lazy(() => import('@/modules/auth/screens/ConfirmPage'));
-const PasswordResetPage = lazy(() => import('@/modules/auth/screens/PasswordResetPage'));
+const PasswordResetPage = lazy(
+  () => import('@/modules/auth/screens/PasswordResetPage'),
+);
 const ContactPage = lazy(() => import('@/modules/contact/screens/ContactPage'));
 const AccountPage = lazy(() => import('@/modules/account/screens/AccountPage'));
 const CartPage = lazy(() => import('@/modules/account/screens/CartPage'));
-const FavoritesPage = lazy(() => import('@/modules/account/screens/FavoritesPage'));
+const FavoritesPage = lazy(
+  () => import('@/modules/account/screens/FavoritesPage'),
+);
 const HistoryPage = lazy(() => import('@/modules/account/screens/HistoryPage'));
-const PaymentResultPage = lazy(() => import('@/modules/payments/screens/PaymentResultPage'));
-const AdminDashboardPage = lazy(() => import('@/modules/admin/screens/AdminDashboardPage'));
-const AdminManagePage = lazy(() => import('@/modules/admin/screens/AdminManagePage'));
+const PaymentResultPage = lazy(
+  () => import('@/modules/payments/screens/PaymentResultPage'),
+);
+const AdminDashboardPage = lazy(
+  () => import('@/modules/admin/screens/AdminDashboardPage'),
+);
+const AdminManagePage = lazy(
+  () => import('@/modules/admin/screens/AdminManagePage'),
+);
 const NotFoundPage = lazy(() => import('@/modules/ui/screens/NotFoundPage'));
 
 const router = createBrowserRouter([
