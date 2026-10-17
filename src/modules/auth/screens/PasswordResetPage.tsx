@@ -45,9 +45,13 @@ export default function PasswordResetPage() {
     setIsSendingCode(true);
     try {
       await authService.requestReset(trimmedUser);
-      setNotice(t('resetEmailSent'));
+      const message = t('resetEmailSent');
+      setNotice(message);
+      toast.info(message, { description: trimmedUser });
     } catch (err) {
-      setError(getLocalizedErrorMessage(err, t));
+      const message = getLocalizedErrorMessage(err, t);
+      setError(message);
+      toast.error(message);
     } finally {
       setIsSendingCode(false);
     }
@@ -71,11 +75,17 @@ export default function PasswordResetPage() {
         resetCode.trim(),
       );
       setResetToken(result.data.resetToken);
-      setNotice(t('resetCodeVerified'));
+      const message = t('resetCodeVerified');
+      setNotice(message);
+      toast.success(message);
     } catch (err) {
-      setError(
-        getLocalizedErrorMessage(err, t, 'errorResetCodeInvalidOrExpired'),
+      const message = getLocalizedErrorMessage(
+        err,
+        t,
+        'errorResetCodeInvalidOrExpired',
       );
+      setError(message);
+      toast.error(message);
     } finally {
       setIsVerifyingCode(false);
     }
@@ -94,12 +104,18 @@ export default function PasswordResetPage() {
     setIsSavingPassword(true);
     try {
       await authService.resetPassword(resetToken, password, confirmPassword);
-      toast.success(t('passwordUpdated'));
+      toast.success(t('toastPasswordUpdatedTitle'), {
+        description: t('passwordUpdated'),
+      });
       navigate(ROUTES.LOGIN);
     } catch (err) {
-      setError(
-        getLocalizedErrorMessage(err, t, 'errorResetCodeInvalidOrExpired'),
+      const message = getLocalizedErrorMessage(
+        err,
+        t,
+        'errorResetCodeInvalidOrExpired',
       );
+      setError(message);
+      toast.error(message);
     } finally {
       setIsSavingPassword(false);
     }

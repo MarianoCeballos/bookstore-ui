@@ -12,8 +12,11 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint .",
-    "test": "jest --runInBand",
+    "lint": "eslint \"./src/**/*.{ts,tsx}\"",
+    "lint:fix": "yarn lint --fix",
+    "lint:all": "eslint .",
+    "test": "jest",
+    "test:watch": "jest --watch --coverage=false",
     "api:generate": "node scripts/generate-api-types.mjs",
     "sanitycheck": "yarn typecheck && yarn lint && yarn test && yarn build",
     "prepare": "husky"

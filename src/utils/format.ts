@@ -21,6 +21,26 @@ export function formatCurrency(
   return formatter.format(safeAmount);
 }
 
+const numberFormatters = new Map<string, Intl.NumberFormat>();
+
+export function formatNumber(
+  value: number | string | null | undefined,
+  locale = 'en',
+): string {
+  const numericValue =
+    typeof value === 'string' ? Number.parseFloat(value) : Number(value ?? 0);
+  const safeAmount = Number.isFinite(numericValue) ? numericValue : 0;
+  const resolvedLocale = locale.startsWith('es') ? 'es-AR' : 'en-US';
+  let formatter = numberFormatters.get(resolvedLocale);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(resolvedLocale, {
+      maximumFractionDigits: 2,
+    });
+    numberFormatters.set(resolvedLocale, formatter);
+  }
+  return formatter.format(safeAmount);
+}
+
 export function formatDate(
   value: string | Date | null | undefined,
   locale = 'en',

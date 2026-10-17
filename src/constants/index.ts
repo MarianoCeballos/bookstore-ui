@@ -8,6 +8,14 @@ export const DEFAULT_CATALOG_PAGE_SIZE = 12;
 
 export const HERO_AUTOPLAY_INTERVAL_MS = 6000;
 
+export const MAX_PROFILE_PIC_BYTES = 2 * 1024 * 1024; // 2 MB
+export const ALLOWED_PROFILE_PIC_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+] as const;
+
 export const ROUTES = {
   HOME: '/',
   BOOKS: '/books',

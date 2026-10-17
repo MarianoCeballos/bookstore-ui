@@ -6,9 +6,10 @@ import { ROUTES } from '@/constants';
 import { AdminBooksSection } from '@/modules/admin/components/AdminBooksSection';
 import { AdminOrdersSection } from '@/modules/admin/components/AdminOrdersSection';
 import { AdminReviewsSection } from '@/modules/admin/components/AdminReviewsSection';
+import { AdminStatsSection } from '@/modules/admin/components/AdminStatsSection';
 import { AdminUsersSection } from '@/modules/admin/components/AdminUsersSection';
 
-const sections = ['books', 'users', 'reviews', 'orders'] as const;
+const sections = ['stats', 'books', 'users', 'reviews', 'orders'] as const;
 type Section = (typeof sections)[number];
 
 export default function AdminManagePage() {
@@ -29,6 +30,7 @@ export default function AdminManagePage() {
   }
 
   const sectionLabels: Record<Section, string> = {
+    stats: t('statsSectionTitle'),
     books: t('booksSectionTitle'),
     users: t('usersSectionTitle'),
     reviews: t('reviewsSectionTitle'),
@@ -70,6 +72,7 @@ export default function AdminManagePage() {
         </Stack>
       </Stack>
 
+      {section === 'stats' && <AdminStatsSection />}
       {section === 'books' && <AdminBooksSection />}
       {section === 'users' && <AdminUsersSection />}
       {section === 'reviews' && <AdminReviewsSection />}

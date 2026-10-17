@@ -23,10 +23,15 @@ export function AdminReviewsSection() {
 
   const handleConfirmDelete = async () => {
     if (reviewIdToDelete == null) return;
+    const targetReview = reviewsQuery.data?.find(
+      (item) => item.ID === reviewIdToDelete,
+    );
     setIsDeleting(true);
     try {
       await accountService.deleteReview(reviewIdToDelete);
-      toast.success(t('toastReviewDeleted'));
+      toast.success(t('toastReviewDeleted'), {
+        description: targetReview?.title,
+      });
       setReviewIdToDelete(null);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['admin', 'reviews'] }),

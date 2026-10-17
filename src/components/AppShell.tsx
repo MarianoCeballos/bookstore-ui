@@ -21,15 +21,17 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Toaster } from 'sonner';
+import { toast } from 'sonner';
 import bookLogo from '@/assets/Book_Logo.png';
 import SearchBox from '@/components/SearchBox';
+import { Toaster } from '@/components/Toaster';
 import { UserAccountMenu } from '@/components/UserAccountMenu';
 import { ROUTES } from '@/constants';
 import { useCart } from '@/modules/account/context/CartContext';
 import { useFavorites } from '@/modules/account/context/FavoritesContext';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { useUi } from '@/modules/ui/context/UiContext';
+import { Footer } from '@/components/Footer';
 
 export default function AppShell() {
   const { user, logout } = useAuth();
@@ -44,10 +46,14 @@ export default function AppShell() {
 
   const [navMenuAnchor, setNavMenuAnchor] = useState<HTMLElement | null>(null);
 
-  const navLinks = [
+  type NavLink = {
+    label: string;
+    to: string;
+  };
+
+  const navLinks: NavLink[] = [
     { label: t('home'), to: ROUTES.HOME },
     { label: t('browse'), to: ROUTES.BOOKS },
-    { label: t('contact'), to: ROUTES.CONTACT },
   ];
 
   const isActiveLink = (to: string) =>
@@ -62,6 +68,9 @@ export default function AppShell() {
 
   const handleLogout = () => {
     logout();
+    toast.info(t('toastSignedOut'), {
+      description: t('toastSignedOutDescription'),
+    });
     navigate(ROUTES.HOME);
   };
 
@@ -267,17 +276,8 @@ export default function AppShell() {
       <Box component="main" sx={{ flex: 1, py: { xs: 2, md: 3 } }}>
         <Outlet />
       </Box>
-      <Box
-        component="footer"
-        sx={{ py: 2, bgcolor: '#4a2f22', color: '#fffaf0' }}
-      >
-        <Container maxWidth="xl">
-          <Typography variant="body2">
-            © {new Date().getFullYear()} Bookstore · {t('footerTagline')}
-          </Typography>
-        </Container>
-      </Box>
-      <Toaster richColors position="top-right" />
+      <Footer />
+      <Toaster />
     </Box>
   );
 }

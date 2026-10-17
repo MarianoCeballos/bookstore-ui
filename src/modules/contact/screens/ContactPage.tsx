@@ -53,16 +53,21 @@ export default function ContactPage() {
 
   const submit = form.handleSubmit(async (input) => {
     setError('');
+    const senderEmail = input.sender.trim();
     try {
       await contactService.send({
-        sender: input.sender.trim(),
+        sender: senderEmail,
         title: input.title.trim(),
         message: input.message.trim(),
       });
-      toast.success(t('toastMessageSent'));
+      toast.success(t('toastMessageSent'), {
+        description: t('toastMessageSentDescription', { email: senderEmail }),
+      });
       form.reset();
     } catch (err) {
-      setError(getLocalizedErrorMessage(err, t));
+      const message = getLocalizedErrorMessage(err, t);
+      setError(message);
+      toast.error(message);
     }
   });
 

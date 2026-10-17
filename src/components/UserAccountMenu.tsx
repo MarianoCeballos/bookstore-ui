@@ -66,6 +66,8 @@ export function UserAccountMenu({ user, onLogout }: UserAccountMenuProps) {
         }}
       >
         <Avatar
+          src={user.profilePic || undefined}
+          alt={fullName}
           sx={{
             width: 32,
             height: 32,
@@ -116,6 +118,8 @@ export function UserAccountMenu({ user, onLogout }: UserAccountMenuProps) {
           }}
         >
           <Avatar
+            src={user.profilePic || undefined}
+            alt={fullName}
             sx={{
               width: 40,
               height: 40,

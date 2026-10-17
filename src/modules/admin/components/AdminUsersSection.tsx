@@ -8,10 +8,12 @@ import type { User } from '@/interfaces/models';
 import { accountService } from '@/modules/account/services/account.service';
 import { DataTable } from '@/modules/admin/components/DataTable';
 import { adminService } from '@/modules/admin/services/admin.service';
+import { useAuth } from '@/modules/auth/context/AuthContext';
 import { getLocalizedErrorMessage } from '@/utils/error';
 
 export function AdminUsersSection() {
   const { t } = useTranslation();
+  const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
   const [query, setQuery] = useState('');
   const [mutatingUserId, setMutatingUserId] = useState<number | null>(null);
@@ -22,6 +24,9 @@ export function AdminUsersSection() {
     queryKey: ['admin', 'users', query],
     queryFn: () => adminService.users(query.trim() || undefined),
   });
+
+  const visibleUsers =
+    usersQuery.data?.filter((item) => item.ID !== currentUser?.ID) ?? [];
 
   const invalidateUsers = async () => {
     await Promise.all([
@@ -34,10 +39,14 @@ export function AdminUsersSection() {
     userId: number,
     status: 'enabled' | 'suspended' | 'admin',
   ) => {
+    if (currentUser && userId === currentUser.ID) return;
+    const targetUser = usersQuery.data?.find((item) => item.ID === userId);
     setMutatingUserId(userId);
     try {
       await accountService.setUserStatus(userId, status);
-      toast.success(t('toastUserUpdated'));
+      toast.success(t('toastUserUpdated'), {
+        description: targetUser ? `@${targetUser.username}` : undefined,
+      });
       await invalidateUsers();
     } catch (err) {
       toast.error(getLocalizedErrorMessage(err, t));
@@ -47,11 +56,14 @@ export function AdminUsersSection() {
   };
 
   const handleConfirmBan = async () => {
-    if (!userToBan) return;
+    if (!userToBan || (currentUser && userToBan.ID === currentUser.ID)) return;
+    const bannedUsername = userToBan.username;
     setIsBanning(true);
     try {
       await accountService.removeUser(userToBan.ID);
-      toast.success(t('toastUserUpdated'));
+      toast.success(t('toastUserBanned'), {
+        description: `@${bannedUsername}`,
+      });
       setUserToBan(null);
       await invalidateUsers();
     } catch (err) {
@@ -82,7 +94,7 @@ export function AdminUsersSection() {
           t('actions'),
         ]}
         rows={
-          usersQuery.data?.map((item) => {
+          visibleUsers.map((item) => {
             const isMutating = mutatingUserId === item.ID;
             return [
               item.ID,

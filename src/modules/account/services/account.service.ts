@@ -6,16 +6,20 @@ import type {
   Order,
   Review,
   User,
+  UserPublic,
+  UserReviews,
 } from '@/interfaces/models';
-import http from '@/services/http';
+import axiosInstance from '@/services/axios';
 
 export const accountService = {
   async favorites(id: number): Promise<FavoriteBook[]> {
-    const { data } = await http.get<FavoriteBook[]>(`/users/${id}/favorites`);
+    const { data } = await axiosInstance.get<FavoriteBook[]>(
+      `/users/${id}/favorites`,
+    );
     return data;
   },
   async cart(id: number): Promise<CartBook[]> {
-    const { data } = await http.get<CartBook[]>(`/users/${id}/cart`);
+    const { data } = await axiosInstance.get<CartBook[]>(`/users/${id}/cart`);
     return data;
   },
   async setBookRelation(
@@ -25,34 +29,42 @@ export const accountService = {
     add: boolean,
   ): Promise<void> {
     const url = `/users/${id}/${relation}`;
-    if (add) await http.post(url, { ID: bookId });
-    else await http.delete(url, { data: { ID: bookId } });
+    if (add) await axiosInstance.post(url, { ID: bookId });
+    else await axiosInstance.delete(url, { data: { ID: bookId } });
   },
   async orders(): Promise<Order[]> {
-    const { data } = await http.get<Order[]>('/payments');
+    const { data } = await axiosInstance.get<Order[]>('/payments');
     return data;
   },
   async reviews(bookId: number): Promise<BookReviews> {
-    const { data } = await http.get<BookReviews>(`/reviews/book/${bookId}`);
+    const { data } = await axiosInstance.get<BookReviews>(
+      `/reviews/book/${bookId}`,
+    );
+    return data;
+  },
+  async userReviews(userId: number): Promise<UserReviews> {
+    const { data } = await axiosInstance.get<UserReviews>(
+      `/reviews/user/${userId}`,
+    );
     return data;
   },
   async createReview(input: CreateReviewInput): Promise<void> {
-    await http.post('/reviews', input);
+    await axiosInstance.post('/reviews', input);
   },
   async updateReview(
     id: number,
     input: { title: string; review: string; rating: number },
   ): Promise<void> {
-    await http.put(`/reviews/${id}`, input);
+    await axiosInstance.put(`/reviews/${id}`, input);
   },
   async reportReview(id: number): Promise<void> {
-    await http.put(`/reviews/${id}?report=true`, {});
+    await axiosInstance.put(`/reviews/${id}?report=true`, {});
   },
   async deleteReview(id: number): Promise<void> {
-    await http.delete(`/reviews/${id}`);
+    await axiosInstance.delete(`/reviews/${id}`);
   },
   async users(username?: string): Promise<User[]> {
-    const { data } = await http.get<User[]>('/users', {
+    const { data } = await axiosInstance.get<User[]>('/users', {
       params: username ? { username } : {},
     });
     return data;
@@ -61,19 +73,47 @@ export const accountService = {
     id: number,
     status: 'suspended' | 'enabled' | 'admin',
   ): Promise<void> {
-    await http.put(`/users/${id}?${status}=true`, {});
+    await axiosInstance.put(`/users/${id}?${status}=true`, {});
   },
   async removeUser(id: number): Promise<void> {
-    await http.delete(`/users/${id}`);
+    await axiosInstance.delete(`/users/${id}`);
   },
   async updateUser(
     id: number,
-    input: { name: string; surname: string; email: string },
-  ): Promise<void> {
-    await http.put(`/users/${id}`, input);
+    input: {
+      username?: string;
+      name?: string;
+      surname?: string;
+      email?: string;
+      profilePic?: string;
+      password?: string;
+      newPassword?: string;
+    },
+  ): Promise<UserPublic> {
+    const { data } = await axiosInstance.put<{
+      data: UserPublic;
+      message: string;
+    }>(`/users/${id}`, input);
+    return data.data;
+  },
+  async uploadProfilePicture(id: number, file: File): Promise<UserPublic> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await axiosInstance.post<{
+      data: UserPublic;
+      message: string;
+    }>(`/users/${id}/profile-picture`, formData);
+    return data.data;
+  },
+  async removeProfilePicture(id: number): Promise<UserPublic> {
+    const { data } = await axiosInstance.delete<{
+      data: UserPublic;
+      message: string;
+    }>(`/users/${id}/profile-picture`);
+    return data.data;
   },
   async reviewsAdmin(): Promise<Review[]> {
-    const { data } = await http.get<Review[]>('/reviews');
+    const { data } = await axiosInstance.get<Review[]>('/reviews');
     return data;
   },
 };

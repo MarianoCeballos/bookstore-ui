@@ -6,6 +6,9 @@ const SERVER_MESSAGE_TO_KEY: Record<string, string> = {
   'confirm your email address before signing in': 'errorConfirmEmailFirst',
   'account is disabled or banned': 'errorAccountDisabledOrBanned',
   'username or email is already registered': 'errorUserAlreadyRegistered',
+  'email or username is already registered': 'errorUserAlreadyRegistered',
+  'email is already registered': 'errorUserAlreadyRegistered',
+  'username is already registered': 'errorUserAlreadyRegistered',
   'confirmation link is invalid or expired':
     'errorConfirmationInvalidOrExpired',
   'user not found': 'errorUserNotFound',
@@ -17,6 +20,12 @@ const SERVER_MESSAGE_TO_KEY: Record<string, string> = {
   'you can only modify your own reviews': 'errorReviewNotOwned',
   'order not found': 'errorOrderNotFound',
   'book title already exists': 'errorBookTitleExists',
+  'profile picture file is required': 'errorProfilePicRequired',
+  'profile picture must be 2 mb or smaller': 'errorProfilePicSize',
+  'profile picture must be a valid jpeg, png, webp, or gif image':
+    'errorProfilePicFormat',
+  'current password is required': 'errorCurrentPasswordRequired',
+  'check your current password': 'errorCurrentPasswordInvalid',
 };
 
 function extractResponseMessage(data: unknown): string | null {

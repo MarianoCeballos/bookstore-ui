@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { BookCover } from '@/components/BookCover';
 import { ROUTES } from '@/constants';
@@ -38,6 +38,7 @@ interface BookDetailHeroProps {
 
 export function BookDetailHero({ book, reviewCount }: BookDetailHeroProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { language } = useUi();
   const { user } = useAuth();
   const { items: cartItems, add: addToCart } = useCart();
@@ -55,17 +56,35 @@ export function BookDetailHero({ book, reviewCount }: BookDetailHeroProps) {
 
   const handleAddToCart = async () => {
     if (!user) {
-      toast.error(t('signInDescription'));
+      toast.warning(t('toastSignInRequired'), {
+        description: t('signInDescription'),
+        action: {
+          label: t('signIn'),
+          onClick: () => navigate(ROUTES.LOGIN),
+        },
+      });
       return;
     }
     if (isInCart) {
-      toast.info(t('toastAlreadyInCart'));
+      toast.info(t('toastAlreadyInCart'), {
+        description: book.title,
+        action: {
+          label: t('viewCart'),
+          onClick: () => navigate(ROUTES.CART),
+        },
+      });
       return;
     }
     setIsCartMutating(true);
     try {
       await addToCart(book.ID);
-      toast.success(t('toastAddedToCart'));
+      toast.success(t('toastAddedToCart'), {
+        description: book.title,
+        action: {
+          label: t('viewCart'),
+          onClick: () => navigate(ROUTES.CART),
+        },
+      });
     } catch (error) {
       toast.error(getLocalizedErrorMessage(error, t));
     } finally {
@@ -75,17 +94,35 @@ export function BookDetailHero({ book, reviewCount }: BookDetailHeroProps) {
 
   const handleToggleFavorite = async () => {
     if (!user) {
-      toast.error(t('signInDescription'));
+      toast.warning(t('toastSignInRequired'), {
+        description: t('signInDescription'),
+        action: {
+          label: t('signIn'),
+          onClick: () => navigate(ROUTES.LOGIN),
+        },
+      });
       return;
     }
     setIsFavoriteMutating(true);
     try {
       if (isFavorite) {
         await removeFavorite(book.ID);
-        toast.success(t('toastRemovedFromFavorites'));
+        toast.success(t('toastRemovedFromFavorites'), {
+          description: book.title,
+          action: {
+            label: t('undo'),
+            onClick: () => void addFavorite(book.ID),
+          },
+        });
       } else {
         await addFavorite(book.ID);
-        toast.success(t('toastAddedToFavorites'));
+        toast.success(t('toastAddedToFavorites'), {
+          description: book.title,
+          action: {
+            label: t('favorites'),
+            onClick: () => navigate(ROUTES.FAVORITES),
+          },
+        });
       }
     } catch (error) {
       toast.error(getLocalizedErrorMessage(error, t));

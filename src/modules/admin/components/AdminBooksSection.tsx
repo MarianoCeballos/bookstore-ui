@@ -142,15 +142,21 @@ export function AdminBooksSection() {
     try {
       if (editingId != null) {
         await booksService.update(editingId, payload);
-        toast.success(t('toastBookUpdated'));
+        toast.success(t('toastBookUpdated'), {
+          description: payload.title,
+        });
       } else {
         await booksService.create(payload);
-        toast.success(t('toastBookCreated'));
+        toast.success(t('toastBookCreated'), {
+          description: payload.title,
+        });
       }
       resetForm();
       await invalidateCatalog();
     } catch (err) {
-      setError(getLocalizedErrorMessage(err, t));
+      const message = getLocalizedErrorMessage(err, t);
+      setError(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -158,10 +164,13 @@ export function AdminBooksSection() {
 
   const handleConfirmDelete = async () => {
     if (!bookToDelete) return;
+    const deletedTitle = bookToDelete.title;
     setIsDeleting(true);
     try {
       await booksService.remove(bookToDelete.ID);
-      toast.success(t('toastBookDeleted'));
+      toast.success(t('toastBookDeleted'), {
+        description: deletedTitle,
+      });
       if (editingId === bookToDelete.ID) {
         resetForm();
       }

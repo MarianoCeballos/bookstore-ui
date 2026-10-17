@@ -25,9 +25,16 @@ interface AuthValue {
   login: (input: LoginInput) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   updateProfile: (input: {
+    username?: string;
     name: string;
     surname: string;
     email: string;
+  }) => Promise<void>;
+  uploadProfilePicture: (file: File) => Promise<void>;
+  removeProfilePicture: () => Promise<void>;
+  changePassword: (input: {
+    password: string;
+    newPassword: string;
   }) => Promise<void>;
   logout: () => void;
 }
@@ -88,6 +95,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
       .finally(() => setLoading(false));
   }, [acceptSession, logout]);
 
+  const invalidateUserDerivedQueries = useCallback(
+    async (userId: number) => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['books'] }),
+        queryClient.invalidateQueries({ queryKey: ['user-reviews', userId] }),
+        queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }),
+      ]);
+    },
+    [queryClient],
+  );
+
   const value = useMemo<AuthValue>(
     () => ({
       user,
@@ -99,16 +117,64 @@ export function AuthProvider({ children }: PropsWithChildren) {
       updateProfile: async (input) => {
         if (!user) throw new Error('Sign in to update your profile');
         const trimmed = {
+          ...(input.username
+            ? { username: input.username.trim().toLowerCase() }
+            : {}),
           name: input.name.trim(),
           surname: input.surname.trim(),
-          email: input.email.trim(),
+          email: input.email.trim().toLowerCase(),
         };
-        await accountService.updateUser(user.ID, trimmed);
-        setUser((current) => (current ? { ...current, ...trimmed } : current));
+        const updated = await accountService.updateUser(user.ID, trimmed);
+        setUser((current) =>
+          current
+            ? {
+                ...current,
+                ...updated,
+                email: trimmed.email,
+              }
+            : current,
+        );
+        await invalidateUserDerivedQueries(user.ID);
+      },
+      uploadProfilePicture: async (file) => {
+        if (!user) throw new Error('Sign in to update your profile');
+        const updated = await accountService.uploadProfilePicture(
+          user.ID,
+          file,
+        );
+        setUser((current) =>
+          current
+            ? {
+                ...current,
+                profilePic: updated.profilePic,
+              }
+            : current,
+        );
+        await invalidateUserDerivedQueries(user.ID);
+      },
+      removeProfilePicture: async () => {
+        if (!user) throw new Error('Sign in to update your profile');
+        const updated = await accountService.removeProfilePicture(user.ID);
+        setUser((current) =>
+          current
+            ? {
+                ...current,
+                profilePic: updated.profilePic,
+              }
+            : current,
+        );
+        await invalidateUserDerivedQueries(user.ID);
+      },
+      changePassword: async (input) => {
+        if (!user) throw new Error('Sign in to update your profile');
+        await accountService.updateUser(user.ID, {
+          password: input.password,
+          newPassword: input.newPassword,
+        });
       },
       logout,
     }),
-    [acceptSession, loading, logout, user],
+    [acceptSession, invalidateUserDerivedQueries, loading, logout, user],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

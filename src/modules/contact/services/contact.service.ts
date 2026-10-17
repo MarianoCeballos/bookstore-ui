@@ -1,4 +1,4 @@
-import http from '@/services/http';
+import axiosInstance from '@/services/axios';
 
 export const contactService = {
   async send(input: {
@@ -6,7 +6,7 @@ export const contactService = {
     title: string;
     message: string;
   }): Promise<{ message: string }> {
-    const { data } = await http.post('/emails/contact', input);
+    const { data } = await axiosInstance.post('/emails/contact', input);
     return data;
   },
 };

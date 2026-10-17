@@ -104,36 +104,51 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
   const submitLogin = loginForm.handleSubmit(async (input) => {
     setError('');
     setUnconfirmedUsername('');
+    const trimmedUsername = input.username.trim();
     try {
       await login({
-        username: input.username.trim(),
+        username: trimmedUsername,
         password: input.password,
       });
-      toast.success(t('toastWelcomeBack'));
+      toast.success(t('toastWelcomeBack'), {
+        description: `@${trimmedUsername}`,
+      });
       finishLogin();
     } catch (err) {
       const msg = getLocalizedErrorMessage(err, t, 'errorInvalidCredentials');
       setError(msg);
       if (msg === t('errorConfirmEmailFirst')) {
-        setUnconfirmedUsername(input.username.trim());
+        setUnconfirmedUsername(trimmedUsername);
+        toast.warning(msg, {
+          description: `@${trimmedUsername}`,
+        });
+      } else {
+        toast.error(msg);
       }
     }
   });
 
   const submitRegister = registerForm.handleSubmit(async (input) => {
     setError('');
+    const trimmedEmail = input.email.trim();
     try {
       await createAccount({
         ...input,
         username: input.username.trim(),
-        email: input.email.trim(),
+        email: trimmedEmail,
         name: input.name.trim(),
         surname: input.surname.trim(),
       });
-      toast.success(t('toastAccountCreated'));
+      toast.success(t('toastAccountCreated'), {
+        description: t('toastAccountCreatedDescription', {
+          email: trimmedEmail,
+        }),
+      });
       navigate(ROUTES.LOGIN);
     } catch (err) {
-      setError(getLocalizedErrorMessage(err, t));
+      const msg = getLocalizedErrorMessage(err, t);
+      setError(msg);
+      toast.error(msg);
     }
   });
 
@@ -142,7 +157,9 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
     setIsResending(true);
     try {
       await authService.resend(unconfirmedUsername);
-      toast.success(t('confirmationSent'));
+      toast.success(t('toastConfirmationSentTitle'), {
+        description: t('confirmationSent'),
+      });
       setUnconfirmedUsername('');
     } catch (err) {
       toast.error(getLocalizedErrorMessage(err, t));

@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { BookCover } from '@/components/BookCover';
 import { PageStateCard } from '@/components/PageStateCard';
 import { ROUTES } from '@/constants';
+import type { Book } from '@/interfaces/models';
 import { useCart } from '@/modules/account/context/CartContext';
 import { paymentsService } from '@/modules/payments/services/payments.service';
 import { useUi } from '@/modules/ui/context/UiContext';
@@ -32,7 +33,7 @@ import { formatCurrency } from '@/utils/format';
 export default function CartPage() {
   const { t } = useTranslation();
   const { language } = useUi();
-  const { items, loading, remove } = useCart();
+  const { items, loading, add, remove } = useCart();
 
   const [gift, setGift] = useState(false);
   const [recipient, setRecipient] = useState('');
@@ -43,13 +44,24 @@ export default function CartPage() {
 
   const total = items.reduce((sum, item) => sum + Number(item.price), 0);
 
-  const handleRemove = async (bookId: number) => {
-    setRemovingId(bookId);
+  const handleRemove = async (book: Book) => {
+    setRemovingId(book.ID);
     try {
-      await remove(bookId);
-      toast.success(t('toastRemovedFromCart'));
-    } catch (err) {
-      toast.error(getLocalizedErrorMessage(err, t));
+      const removalPromise = remove(book.ID);
+      toast.promise(removalPromise, {
+        loading: t('toastRemovingFromCart'),
+        success: t('toastRemovedFromCart'),
+        description: book.title,
+        action: {
+          label: t('undo'),
+          onClick: () => void add(book.ID),
+        },
+        error: (err: unknown) =>
+          getLocalizedErrorMessage(err, t, 'toastRemoveFromCartError'),
+      });
+      await removalPromise;
+    } catch {
+      // Handled by toast.promise
     } finally {
       setRemovingId(null);
     }
@@ -61,7 +73,9 @@ export default function CartPage() {
 
     const trimmedRecipient = recipient.trim();
     if (gift && !trimmedRecipient) {
-      setRecipientError(t('validationGiftRecipientRequired'));
+      const validationMessage = t('validationGiftRecipientRequired');
+      setRecipientError(validationMessage);
+      toast.warning(validationMessage);
       return;
     }
 
@@ -75,7 +89,9 @@ export default function CartPage() {
         `https://www.mercadopago.com/checkout/v1/redirect?pref_id=${encodeURIComponent(result.preferenceId)}`,
       );
     } catch (err) {
-      setError(getLocalizedErrorMessage(err, t));
+      const message = getLocalizedErrorMessage(err, t);
+      setError(message);
+      toast.error(message);
       setIsCheckingOut(false);
     }
   };
@@ -210,7 +226,7 @@ export default function CartPage() {
                             <DeleteOutlineRoundedIcon fontSize="small" />
                           )
                         }
-                        onClick={() => void handleRemove(book.ID)}
+                        onClick={() => void handleRemove(book)}
                       >
                         {t('remove')}
                       </Button>

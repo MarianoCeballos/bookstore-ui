@@ -10,6 +10,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { ROUTES } from '@/constants';
 import { authService } from '@/modules/auth/services/auth.service';
 
@@ -26,9 +27,19 @@ export default function ConfirmPage() {
     if (!token) return;
     authService
       .confirm(token)
-      .then(() => setResolved({ token, outcome: 'success' }))
-      .catch(() => setResolved({ token, outcome: 'error' }));
-  }, [token]);
+      .then(() => {
+        setResolved({ token, outcome: 'success' });
+        toast.success(t('emailConfirmation'), {
+          description: t('confirmSuccess'),
+        });
+      })
+      .catch(() => {
+        setResolved({ token, outcome: 'error' });
+        toast.error(t('emailConfirmation'), {
+          description: t('confirmError'),
+        });
+      });
+  }, [token, t]);
 
   const status: 'loading' | 'success' | 'error' = !token
     ? 'error'

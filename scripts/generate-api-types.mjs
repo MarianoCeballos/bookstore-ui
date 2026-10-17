@@ -15,8 +15,8 @@ function removeDocumentation(value) {
     return;
   }
   if (value && typeof value === 'object') {
-    delete value.description;
-    delete value.summary;
+    if (typeof value.description === 'string') delete value.description;
+    if (typeof value.summary === 'string') delete value.summary;
     delete value.externalDocs;
     delete value.example;
     delete value.examples;

@@ -72,7 +72,9 @@ export function BookReviewsSection({
   const handleCreateReview = async (values: ReviewFormValues) => {
     try {
       await accountService.createReview({ ...values, bookID: bookId });
-      toast.success(t('toastReviewPublished'));
+      toast.success(t('toastReviewPublished'), {
+        description: values.title.trim(),
+      });
       await invalidateBookQueries();
     } catch (error) {
       toast.error(getLocalizedErrorMessage(error, t));
@@ -84,7 +86,9 @@ export function BookReviewsSection({
     if (!editingReview) return;
     try {
       await accountService.updateReview(editingReview.ID, values);
-      toast.success(t('toastReviewUpdated'));
+      toast.success(t('toastReviewUpdated'), {
+        description: values.title.trim(),
+      });
       setEditingReview(null);
       await invalidateBookQueries();
     } catch (error) {
@@ -95,10 +99,15 @@ export function BookReviewsSection({
 
   const handleConfirmDelete = async () => {
     if (deletingReviewId == null) return;
+    const deletedTitle = reviews.find(
+      (item) => item.ID === deletingReviewId,
+    )?.title;
     setIsDeleting(true);
     try {
       await accountService.deleteReview(deletingReviewId);
-      toast.success(t('toastReviewDeleted'));
+      toast.success(t('toastReviewDeleted'), {
+        description: deletedTitle,
+      });
       if (editingReview?.ID === deletingReviewId) {
         setEditingReview(null);
       }
@@ -115,7 +124,9 @@ export function BookReviewsSection({
     setReportingReviewId(reviewId);
     try {
       await accountService.reportReview(reviewId);
-      toast.success(t('toastReviewReported'));
+      toast.info(t('toastReviewReported'), {
+        description: t('toastReviewReportedDescription'),
+      });
       await invalidateBookQueries();
     } catch (error) {
       toast.error(getLocalizedErrorMessage(error, t));

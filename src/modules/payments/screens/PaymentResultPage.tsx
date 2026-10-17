@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { ROUTES } from '@/constants';
 import { paymentsService } from '@/modules/payments/services/payments.service';
 
@@ -42,14 +43,23 @@ export default function PaymentResultPage() {
           normalized.includes('completed')
         ) {
           setResolved({ paymentId, outcome: 'approved' });
+          toast.success(t('paymentUpdate'), {
+            description: t('paymentApproved'),
+          });
         } else {
           setResolved({ paymentId, outcome: 'pending' });
+          toast.info(t('paymentUpdate'), {
+            description: t('paymentPending'),
+          });
         }
       })
       .catch(() => {
         setResolved({ paymentId, outcome: 'error' });
+        toast.warning(t('paymentUpdate'), {
+          description: t('paymentVerifyError'),
+        });
       });
-  }, [paymentId, queryClient]);
+  }, [paymentId, queryClient, t]);
 
   const verifyState: 'idle' | 'loading' | 'approved' | 'pending' | 'error' =
     !paymentId

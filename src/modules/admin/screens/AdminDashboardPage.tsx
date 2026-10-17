@@ -1,3 +1,4 @@
+import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import {
   Alert,
   Box,
@@ -10,17 +11,8 @@ import {
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { ROUTES } from '@/constants';
+import { AdminQuickLinks } from '@/modules/admin/components/AdminQuickLinks';
+import { AdminRecentOrders } from '@/modules/admin/components/AdminRecentOrders';
 import { adminService } from '@/modules/admin/services/admin.service';
 
 export default function AdminDashboardPage() {
@@ -30,30 +22,48 @@ export default function AdminDashboardPage() {
     queryFn: adminService.stats,
   });
 
-  const sections = [
-    { label: t('booksSectionTitle'), path: 'books' },
-    { label: t('usersSectionTitle'), path: 'users' },
-    { label: t('reviewsSectionTitle'), path: 'reviews' },
-    { label: t('ordersSectionTitle'), path: 'orders' },
-  ] as const;
-
-  const chartData =
-    stats.data?.books.slice(0, 10).map((book) => ({
-      title:
-        book.title.length > 18 ? `${book.title.slice(0, 18)}…` : book.title,
-      sold: book.soldCopies,
-    })) ?? [];
-
   return (
     <Container maxWidth="xl">
-      <Typography variant="h3" sx={{ mb: 3 }}>
-        {t('adminDashboard')}
-      </Typography>
+      <Paper
+        sx={{
+          p: { xs: 3, md: 4 },
+          mb: 4,
+          borderRadius: 3,
+          color: '#fffaf0',
+          background: 'linear-gradient(135deg, #4a2f22 0%, #674533 100%)',
+        }}
+      >
+        <Stack spacing={1.5}>
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+            <Box
+              sx={{
+                display: 'grid',
+                placeItems: 'center',
+                width: 48,
+                height: 48,
+                flexShrink: 0,
+                borderRadius: 2,
+                bgcolor: 'rgba(255, 250, 240, 0.16)',
+              }}
+            >
+              <DashboardOutlinedIcon />
+            </Box>
+            <Typography variant="h3" sx={{ color: '#fffaf0' }}>
+              {t('adminDashboard')}
+            </Typography>
+          </Stack>
+          <Typography
+            sx={{ color: 'rgba(255, 250, 240, 0.85)', maxWidth: 640 }}
+          >
+            {t('adminDashboardSubtitle')}
+          </Typography>
+        </Stack>
+      </Paper>
 
       {stats.isError && (
         <Alert
           severity="error"
-          sx={{ mb: 2 }}
+          sx={{ mb: 3 }}
           action={
             <Button
               color="inherit"
@@ -68,92 +78,32 @@ export default function AdminDashboardPage() {
         </Alert>
       )}
 
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={1.5}
-        sx={{ mb: 4, flexWrap: 'wrap' }}
-      >
-        {sections.map((section) => (
-          <Button
-            key={section.path}
-            component={Link}
-            to={ROUTES.ADMIN_SECTION(section.path)}
-            variant="outlined"
-          >
-            {t('manage')} · {section.label}
-          </Button>
-        ))}
-      </Stack>
-
       {stats.isPending && (
-        <Stack spacing={3} aria-busy="true">
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <Skeleton variant="rounded" height={116} sx={{ flex: 1 }} />
-            <Skeleton variant="rounded" height={116} sx={{ flex: 1 }} />
-            <Skeleton variant="rounded" height={116} sx={{ flex: 1 }} />
-          </Stack>
-          <Skeleton variant="rounded" height={420} />
-        </Stack>
+        <Box
+          aria-busy="true"
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
+            gap: 2,
+          }}
+        >
+          <Skeleton variant="rounded" height={320} />
+          <Skeleton variant="rounded" height={320} />
+        </Box>
       )}
 
       {stats.data && (
-        <>
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            spacing={2}
-            sx={{ mb: 3 }}
-          >
-            <Paper variant="outlined" sx={{ p: 3, flex: 1, borderRadius: 2 }}>
-              <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
-                {t('registeredReaders')}
-              </Typography>
-              <Typography variant="h3" sx={{ mt: 0.5 }}>
-                {stats.data.users.totalUsers}
-              </Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 3, flex: 1, borderRadius: 2 }}>
-              <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
-                {t('booksInCatalog')}
-              </Typography>
-              <Typography variant="h3" sx={{ mt: 0.5 }}>
-                {stats.data.books.length}
-              </Typography>
-            </Paper>
-            <Paper variant="outlined" sx={{ p: 3, flex: 1, borderRadius: 2 }}>
-              <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
-                {t('purchases')}
-              </Typography>
-              <Typography variant="h3" sx={{ mt: 0.5 }}>
-                {stats.data.payments.length}
-              </Typography>
-            </Paper>
-          </Stack>
-
-          <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
-            <Typography variant="h5" sx={{ mb: 2 }}>
-              {t('topSelling')}
-            </Typography>
-            <Box sx={{ height: 360, minWidth: 0 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 8, right: 16, left: 0, bottom: 40 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="title"
-                    angle={-25}
-                    textAnchor="end"
-                    interval={0}
-                  />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Bar dataKey="sold" fill="#674533" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Box>
-          </Paper>
-        </>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
+            gap: 2,
+            alignItems: 'start',
+          }}
+        >
+          <AdminRecentOrders payments={stats.data.payments} />
+          <AdminQuickLinks />
+        </Box>
       )}
     </Container>
   );

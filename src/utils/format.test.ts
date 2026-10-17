@@ -1,4 +1,9 @@
-import { formatCurrency, formatDate, getUserInitials } from '@/utils/format';
+import {
+  formatCurrency,
+  formatDate,
+  formatNumber,
+  getUserInitials,
+} from '@/utils/format';
 
 describe('format utilities', () => {
   it('formats currency values safely for English and Spanish locales', () => {
@@ -11,6 +16,12 @@ describe('format utilities', () => {
     expect(formatDate(null, 'en')).toBe('—');
     expect(formatDate('2025-03-15T12:00:00.000Z', 'en')).toContain('2025');
     expect(formatDate('not-a-date', 'en')).toBe('not-a-date');
+  });
+
+  it('formats counts with locale-aware grouping and safe fallbacks', () => {
+    expect(formatNumber(1234, 'en')).toBe('1,234');
+    expect(formatNumber('invalid', 'en')).toBe('0');
+    expect(formatNumber(null, 'en')).toBe('0');
   });
 
   it('derives initials from name, surname, or username', () => {

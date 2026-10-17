@@ -14,19 +14,26 @@ import BookCard from '@/components/BookCard';
 import BookGrid from '@/components/BookGrid';
 import { PageStateCard } from '@/components/PageStateCard';
 import { ROUTES } from '@/constants';
+import type { Book } from '@/interfaces/models';
 import { useFavorites } from '@/modules/account/context/FavoritesContext';
 import { getLocalizedErrorMessage } from '@/utils/error';
 
 export default function FavoritesPage() {
-  const { items, loading, remove } = useFavorites();
+  const { items, loading, add, remove } = useFavorites();
   const { t } = useTranslation();
   const [removingId, setRemovingId] = useState<number | null>(null);
 
-  const handleRemove = async (bookId: number) => {
-    setRemovingId(bookId);
+  const handleRemove = async (book: Book) => {
+    setRemovingId(book.ID);
     try {
-      await remove(bookId);
-      toast.success(t('toastRemovedFromFavorites'));
+      await remove(book.ID);
+      toast.success(t('toastRemovedFromFavorites'), {
+        description: book.title,
+        action: {
+          label: t('undo'),
+          onClick: () => void add(book.ID),
+        },
+      });
     } catch (err) {
       toast.error(getLocalizedErrorMessage(err, t));
     } finally {
@@ -77,7 +84,7 @@ export default function FavoritesPage() {
                       <DeleteOutlineRoundedIcon fontSize="small" />
                     )
                   }
-                  onClick={() => void handleRemove(book.ID)}
+                  onClick={() => void handleRemove(book)}
                 >
                   {t('removeFromFavorites')}
                 </Button>
