@@ -1,7 +1,21 @@
-# UI architecture
+# UI Architecture
 
-The application is a strict TypeScript SPA built with Vite and React. React Router owns navigation. The shared QueryClient and domain hooks own server state; compact contexts hold the current authenticated session and ephemeral interface state. Axios attaches the API access token and routes unauthorized responses through a shared handler.
+The application is a strict TypeScript SPA built with Vite 8, React 19, and Material UI v7. React Router v7 owns navigation. The shared TanStack `QueryClient` and domain hooks own server state; compact contexts hold the current authenticated session (`AuthContext`), cart/favorites relations (`CartContext`, `FavoritesContext`), and interface preferences (`UiContext`). Axios (`src/services/http.ts`) attaches the API bearer token and routes `401` responses through a shared unauthorized handler.
 
-Each feature is grouped under `src/modules/<domain>` with services, hooks, and screens. Shared components, providers, interfaces, route definitions, translations, and utilities are kept separate. OpenAPI path types are generated into `src/interfaces/generated/api.ts` from the running API document.
+## Directory Structure
 
-The public flow includes the catalog, book detail and reviews, registration, sign-in, confirmation and password recovery, contact, cart and favorites, payment return, and purchase history. Authenticated routes protect account features; the admin area exposes book, user, review, payment, and analytics screens.
+- `src/constants/` — Shared route paths (`ROUTES`), localStorage keys (`STORAGE_KEYS`), pagination sizes, and UI timing constants.
+- `src/utils/` — Pure formatting helpers (`formatCurrency`, `formatDate`, `getUserInitials`) and localized API error mapping (`getLocalizedErrorMessage`).
+- `src/i18n/` — Bilingual translation dictionaries (`en.json`, `es.json`) with `localStorage` persistence (`bookstore.language`) and `<html lang>` synchronization.
+- `src/components/` — Reusable UI primitives (`AppShell`, `UserAccountMenu`, `SearchBox`, `BookCard`, `BookGrid`, `BookCover`, `ConfirmDialog`, `PageStateCard`, `RequireAuth`).
+- `src/interfaces/` — Domain aliases (`models.ts`) backed by generated OpenAPI contract types (`generated/api.ts`).
+- `src/modules/<domain>/` — Feature modules (`catalog`, `auth`, `account`, `admin`, `payments`, `contact`, `lookups`, `ui`) organized into `components/`, `hooks/`, `screens/`, and `services/`.
+
+## Key User Flows
+
+- **Catalog & Book Detail (`src/modules/catalog/`)**: Public catalog search, debounced filtering, category/author/publisher lookups, hero carousel (`HeroBannerCarousel`), pagination (`CatalogPaginationBar`), and the decomposed Book Detail showcase (`BookDetailHero`, `BookMetadataGrid`, `BookReviewsSection`, `BookReviewForm`, `BookDetailSkeleton`).
+- **Authentication & Recovery (`src/modules/auth/`)**: Sign-in, registration, unconfirmed-account email resend, token confirmation (`ConfirmPage`), and 3-step password reset (`PasswordResetPage`).
+- **Account, Cart & Checkout (`src/modules/account/`, `src/modules/payments/`)**: Favorites, server-synced cart with optional gift recipient validation, checkout preference creation, payment verification (`PaymentResultPage`), and order history (`HistoryPage`).
+- **Administration (`src/modules/admin/`)**: Role-guarded analytics dashboard (`AdminDashboardPage`) and decomposed management tabs (`AdminBooksSection`, `AdminUsersSection`, `AdminReviewsSection`, `AdminOrdersSection`, `DataTable`).
+
+See [AUDIT_AND_REFACTORING.md](./AUDIT_AND_REFACTORING.md) for the full UI/UX audit, accessibility improvements (WCAG 2.2 AA), localization coverage, and refactoring log.

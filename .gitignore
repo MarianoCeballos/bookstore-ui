@@ -12,3 +12,4 @@ coverage
 !.yarn/versions
 
 test-results.json
+.codebase-memory/

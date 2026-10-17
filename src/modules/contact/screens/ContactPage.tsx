@@ -1,19 +1,21 @@
-import { useState } from 'react';
+import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
   Button,
+  CircularProgress,
   Container,
   Paper,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-import { toast } from 'sonner';
-import { contactService } from '@/modules/contact/services/contact.service';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import * as yup from 'yup';
+import { contactService } from '@/modules/contact/services/contact.service';
+import { getLocalizedErrorMessage } from '@/utils/error';
 
 interface ContactInput {
   sender: string;
@@ -21,32 +23,57 @@ interface ContactInput {
   message: string;
 }
 
-const schema = yup.object({
-  sender: yup.string().required().email(),
-  title: yup.string().required().max(120),
-  message: yup.string().required().max(4000),
-});
-
 export default function ContactPage() {
   const { t } = useTranslation();
   const [error, setError] = useState('');
+
+  const schema = useMemo(
+    () =>
+      yup.object({
+        sender: yup
+          .string()
+          .trim()
+          .required(t('validationRequired'))
+          .email(t('validationEmail')),
+        title: yup.string().trim().required(t('validationRequired')).max(120),
+        message: yup
+          .string()
+          .trim()
+          .required(t('validationRequired'))
+          .min(10, t('validationMessageMin'))
+          .max(4000),
+      }),
+    [t],
+  );
+
   const form = useForm<ContactInput>({
     resolver: yupResolver(schema),
     defaultValues: { sender: '', title: '', message: '' },
   });
+
   const submit = form.handleSubmit(async (input) => {
     setError('');
+    const senderEmail = input.sender.trim();
     try {
-      const result = await contactService.send(input);
-      toast.success(result.message);
+      await contactService.send({
+        sender: senderEmail,
+        title: input.title.trim(),
+        message: input.message.trim(),
+      });
+      toast.success(t('toastMessageSent'), {
+        description: t('toastMessageSentDescription', { email: senderEmail }),
+      });
       form.reset();
-    } catch {
-      setError('Your message could not be sent. Please try again.');
+    } catch (err) {
+      const message = getLocalizedErrorMessage(err, t);
+      setError(message);
+      toast.error(message);
     }
   });
+
   return (
     <Container maxWidth="sm">
-      <Paper variant="outlined" sx={{ p: { xs: 3, sm: 5 } }}>
+      <Paper variant="outlined" sx={{ p: { xs: 3, sm: 5 }, borderRadius: 2 }}>
         <Typography variant="h4" sx={{ mb: 1 }}>
           {t('contactTitle')}
         </Typography>
@@ -58,19 +85,27 @@ export default function ContactPage() {
             {error}
           </Alert>
         )}
-        <Stack component="form" onSubmit={submit} className="form-stack">
+        <Stack
+          component="form"
+          onSubmit={(event) => void submit(event)}
+          className="form-stack"
+          noValidate
+        >
           <TextField
             label={t('sender')}
             type="email"
+            autoComplete="email"
             {...form.register('sender')}
             error={Boolean(form.formState.errors.sender)}
             helperText={form.formState.errors.sender?.message}
+            disabled={form.formState.isSubmitting}
           />
           <TextField
             label={t('subject')}
             {...form.register('title')}
             error={Boolean(form.formState.errors.title)}
             helperText={form.formState.errors.title?.message}
+            disabled={form.formState.isSubmitting}
           />
           <TextField
             label={t('message')}
@@ -79,13 +114,21 @@ export default function ContactPage() {
             {...form.register('message')}
             error={Boolean(form.formState.errors.message)}
             helperText={form.formState.errors.message?.message}
+            disabled={form.formState.isSubmitting}
           />
           <Button
             type="submit"
             variant="contained"
             disabled={form.formState.isSubmitting}
+            startIcon={
+              form.formState.isSubmitting ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : undefined
+            }
           >
-            {t('sendMessage')}
+            {form.formState.isSubmitting
+              ? t('sendingMessage')
+              : t('sendMessage')}
           </Button>
         </Stack>
       </Paper>

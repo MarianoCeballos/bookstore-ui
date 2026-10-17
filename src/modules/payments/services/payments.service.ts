@@ -1,5 +1,5 @@
 import type { Order } from '@/interfaces/models';
-import http from '@/services/http';
+import axiosInstance from '@/services/axios';
 
 export const paymentsService = {
   async checkout(
@@ -9,11 +9,16 @@ export const paymentsService = {
     preferenceId: string;
     orderId: number;
   }> {
-    const { data } = await http.post('/payments', { gift, giftRecipient });
+    const { data } = await axiosInstance.post('/payments', {
+      gift,
+      giftRecipient,
+    });
     return data;
   },
   async verify(paymentId: string): Promise<Order> {
-    const { data } = await http.post<Order>('/payments/create', { paymentId });
+    const { data } = await axiosInstance.post<Order>('/payments/create', {
+      paymentId,
+    });
     return data;
   },
 };

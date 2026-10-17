@@ -449,6 +449,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/{ID}/profile-picture": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        
+        post: operations["UsersController_uploadProfilePicture"];
+        
+        delete: operations["UsersController_removeProfilePicture"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/{ID}/favorites": {
         parameters: {
             query?: never;
@@ -2145,6 +2163,104 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_uploadProfilePicture: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ID: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateUserResponseDto"];
+                };
+            };
+            
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    UsersController_removeProfilePicture: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ID: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateUserResponseDto"];
+                };
             };
             
             401: {

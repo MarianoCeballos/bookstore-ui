@@ -1,5 +1,6 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { CircularProgress, Stack } from '@mui/material';
 import { lazy, Suspense } from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import AppShell from '@/components/AppShell';
 import RequireAuth from '@/components/RequireAuth';
 
@@ -68,7 +69,13 @@ const router = createBrowserRouter([
 
 export default function AppRouter() {
   return (
-    <Suspense fallback={<div role="status">Loading page…</div>}>
+    <Suspense
+      fallback={
+        <Stack role="status" sx={{ py: 12, alignItems: 'center' }}>
+          <CircularProgress />
+        </Stack>
+      }
+    >
       <RouterProvider router={router} />
     </Suspense>
   );

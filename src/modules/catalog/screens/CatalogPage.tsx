@@ -1,34 +1,27 @@
-import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
   Button,
   Container,
   FormControl,
-  IconButton,
   InputLabel,
   MenuItem,
-  Pagination,
   Select,
   Stack,
   Typography,
 } from '@mui/material';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHomeBooks, useBooks } from '@/modules/catalog/hooks/useBooks';
-import { useAuthors, useCategories } from '@/modules/lookups/hooks/useLookups';
+import { Link, useSearchParams } from 'react-router-dom';
 import BookGrid from '@/components/BookGrid';
+import { DEFAULT_CATALOG_PAGE_SIZE, ROUTES } from '@/constants';
 import type { paths } from '@/interfaces/generated/api';
-import banner from '@/assets/banner.jpg';
-import bannerB from '@/assets/bannerB.jpg';
-import bannerC from '@/assets/bannerC.jpg';
-import bannerD from '@/assets/bannerD.jpg';
-import bannerE from '@/assets/bannerE.jpg';
+import { CatalogPaginationBar } from '@/modules/catalog/components/CatalogPaginationBar';
+import { HeroBannerCarousel } from '@/modules/catalog/components/HeroBannerCarousel';
+import { useBooks, useHomeBooks } from '@/modules/catalog/hooks/useBooks';
+import { useAuthors, useCategories } from '@/modules/lookups/hooks/useLookups';
 
 type Search = NonNullable<paths['/books']['get']['parameters']['query']>;
-const banners = [banner, bannerB, bannerC, bannerD, bannerE];
 
 export default function CatalogPage({
   featured = false,
@@ -38,35 +31,77 @@ export default function CatalogPage({
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get('search') ?? '';
-  const [author, setAuthor] = useState('');
-  const [category, setCategory] = useState('');
+  const urlAuthor = searchParams.get('author') ?? '';
+  const urlCategory = searchParams.get('category') ?? '';
+
+  const [author, setAuthor] = useState(urlAuthor);
+  const [category, setCategory] = useState(urlCategory);
   const [page, setPage] = useState(1);
-  const [bannerIndex, setBannerIndex] = useState(0);
-  useEffect(() => {
-    if (!featured) return;
-    const timer = window.setInterval(() => {
-      setBannerIndex((index) => (index + 1) % banners.length);
-    }, 6000);
-    return () => window.clearInterval(timer);
-  }, [featured]);
-  const { data: authors = [] } = useAuthors(!featured);
-  const { data: categories = [] } = useCategories(!featured);
-  const [pageSearch, setPageSearch] = useState(search);
-  if (pageSearch !== search) {
-    setPageSearch(search);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_CATALOG_PAGE_SIZE);
+
+  const [prevUrlFilters, setPrevUrlFilters] = useState({
+    search,
+    urlAuthor,
+    urlCategory,
+  });
+
+  if (
+    prevUrlFilters.search !== search ||
+    prevUrlFilters.urlAuthor !== urlAuthor ||
+    prevUrlFilters.urlCategory !== urlCategory
+  ) {
+    setPrevUrlFilters({ search, urlAuthor, urlCategory });
+    if (prevUrlFilters.urlAuthor !== urlAuthor) {
+      setAuthor(urlAuthor);
+    }
+    if (prevUrlFilters.urlCategory !== urlCategory) {
+      setCategory(urlCategory);
+    }
     setPage(1);
   }
+
+  const { data: authors = [] } = useAuthors(!featured);
+  const { data: categories = [] } = useCategories(!featured);
+
   const filters: Search = useMemo(
     () => ({
       ...(search.trim() ? { title: search.trim() } : {}),
       ...(author ? { author } : {}),
       ...(category ? { category } : {}),
-      ...(!featured ? { page, pageSize: 12 } : {}),
     }),
-    [author, category, featured, page, search],
+    [author, category, search],
   );
+
   const booksQuery = useBooks(filters, !featured);
   const homeQuery = useHomeBooks(featured);
+
+  const allBooks = booksQuery.data ?? [];
+  const totalBooks = allBooks.length;
+  const totalPages = Math.max(1, Math.ceil(totalBooks / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedBooks = allBooks.slice(startIndex, startIndex + pageSize);
+  const rangeStart = totalBooks === 0 ? 0 : startIndex + 1;
+  const rangeEnd = Math.min(startIndex + pageSize, totalBooks);
+
+  const hasActiveFilters = Boolean(search.trim() || author || category);
+
+  const handleClearFilters = () => {
+    setAuthor('');
+    setCategory('');
+    setPage(1);
+    setSearchParams({}, { replace: true });
+  };
+
+  const handlePageChange = (nextPage: number) => {
+    setPage(nextPage);
+    if (
+      typeof window !== 'undefined' &&
+      typeof window.scrollTo === 'function'
+    ) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   if (featured) {
     const sections = [
@@ -74,74 +109,24 @@ export default function CatalogPage({
       [t('readerFavorites'), homeQuery.data?.mostPopular],
       [t('newReleases'), homeQuery.data?.newReleases],
     ] as const;
+
     return (
       <Container maxWidth="xl">
-        <Box className="home-banner">
-          <Box
-            component="img"
-            src={banners[bannerIndex]}
-            alt={t('featuredBanner', { number: bannerIndex + 1 })}
-          />
-          <Box className="home-banner__controls">
-            <IconButton
-              aria-label={t('previousBanner')}
-              onClick={() =>
-                setBannerIndex(
-                  (index) => (index - 1 + banners.length) % banners.length,
-                )
-              }
-              sx={{
-                color: 'white',
-                bgcolor: 'rgb(30 17 11 / 55%)',
-                '&:hover': { bgcolor: 'rgb(30 17 11 / 78%)' },
-              }}
-            >
-              <ChevronLeftIcon />
-            </IconButton>
-            <IconButton
-              aria-label={t('nextBanner')}
-              onClick={() =>
-                setBannerIndex((index) => (index + 1) % banners.length)
-              }
-              sx={{
-                color: 'white',
-                bgcolor: 'rgb(30 17 11 / 55%)',
-                '&:hover': { bgcolor: 'rgb(30 17 11 / 78%)' },
-              }}
-            >
-              <ChevronRightIcon />
-            </IconButton>
-          </Box>
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{ py: 1, justifyContent: 'center' }}
-          >
-            {banners.map((banner, index) => (
-              <Button
-                key={banner}
-                aria-label={t('showBanner', { number: index + 1 })}
-                onClick={() => setBannerIndex(index)}
-                sx={{
-                  minWidth: 10,
-                  width: 10,
-                  height: 10,
-                  p: 0,
-                  borderRadius: '50%',
-                  bgcolor: index === bannerIndex ? '#ddb577' : '#fffaf0',
-                  border: '1px solid #674533',
-                }}
-              />
-            ))}
-          </Stack>
-          <Stack sx={{ alignItems: 'center', pb: 2 }}>
-            <Button component={Link} to="/books" variant="contained">
-              {t('explore')}
-            </Button>
-          </Stack>
-        </Box>
+        <HeroBannerCarousel />
         {homeQuery.isError && (
-          <Alert severity="error" sx={{ mt: 3 }}>
+          <Alert
+            severity="error"
+            sx={{ mt: 3 }}
+            action={
+              <Button
+                color="inherit"
+                size="small"
+                onClick={() => void homeQuery.refetch()}
+              >
+                {t('retry')}
+              </Button>
+            }
+          >
             {t('booksError')}
           </Alert>
         )}
@@ -158,7 +143,12 @@ export default function CatalogPage({
           </Box>
         ))}
         <Stack sx={{ mt: 4, alignItems: 'center' }}>
-          <Button component={Link} to="/books" variant="outlined" size="large">
+          <Button
+            component={Link}
+            to={ROUTES.BOOKS}
+            variant="outlined"
+            size="large"
+          >
             {t('browseAll')}
           </Button>
         </Stack>
@@ -170,27 +160,37 @@ export default function CatalogPage({
     <Container maxWidth="xl" className="catalog-panel">
       <Typography
         variant="h3"
-        sx={{ mb: 1, color: '#674533', fontFamily: 'Roboto, sans-serif' }}
+        sx={{ mb: 1, color: 'primary.dark', fontFamily: 'Roboto, sans-serif' }}
       >
         {t('explore')}
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
         {t('catalogDescription')}
       </Typography>
+
       {search.trim() && (
         <Stack direction="row" spacing={1} sx={{ mb: 2, alignItems: 'center' }}>
-          <Typography color="text.secondary">
+          <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
             {t('resultsFor', { term: search.trim() })}
           </Typography>
           <Button
             size="small"
-            onClick={() => setSearchParams({}, { replace: true })}
+            onClick={() => {
+              const nextParams = new URLSearchParams(searchParams);
+              nextParams.delete('search');
+              setSearchParams(nextParams, { replace: true });
+            }}
           >
             {t('clearSearch')}
           </Button>
         </Stack>
       )}
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 4 }}>
+
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={2}
+        sx={{ mb: 4, alignItems: { xs: 'stretch', md: 'center' } }}
+      >
         <FormControl sx={{ flex: 1 }}>
           <InputLabel id="author-label">{t('author')}</InputLabel>
           <Select
@@ -198,7 +198,8 @@ export default function CatalogPage({
             label={t('author')}
             value={author}
             onChange={(event) => {
-              setAuthor(event.target.value);
+              const nextAuthor = event.target.value;
+              setAuthor(nextAuthor);
               setPage(1);
             }}
           >
@@ -210,6 +211,7 @@ export default function CatalogPage({
             ))}
           </Select>
         </FormControl>
+
         <FormControl sx={{ flex: 1 }}>
           <InputLabel id="category-label">{t('category')}</InputLabel>
           <Select
@@ -217,7 +219,8 @@ export default function CatalogPage({
             label={t('category')}
             value={category}
             onChange={(event) => {
-              setCategory(event.target.value);
+              const nextCategory = event.target.value;
+              setCategory(nextCategory);
               setPage(1);
             }}
           >
@@ -229,23 +232,51 @@ export default function CatalogPage({
             ))}
           </Select>
         </FormControl>
+
+        {hasActiveFilters && (
+          <Button
+            variant="outlined"
+            onClick={handleClearFilters}
+            sx={{ flexShrink: 0, height: 56 }}
+          >
+            {t('clearFilters')}
+          </Button>
+        )}
       </Stack>
+
       {booksQuery.isError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => void booksQuery.refetch()}
+            >
+              {t('retry')}
+            </Button>
+          }
+        >
           {t('booksError')}
         </Alert>
       )}
-      <BookGrid books={booksQuery.data} loading={booksQuery.isPending} />
-      {booksQuery.data && booksQuery.data.length > 0 && (
-        <Stack sx={{ mt: 4, alignItems: 'center' }}>
-          <Pagination
-            page={page}
-            count={booksQuery.data.length < 12 ? page : page + 1}
-            onChange={(_, value) => setPage(value)}
-            color="primary"
-          />
-        </Stack>
-      )}
+
+      <BookGrid books={paginatedBooks} loading={booksQuery.isPending} />
+
+      <CatalogPaginationBar
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        rangeStart={rangeStart}
+        rangeEnd={rangeEnd}
+        totalBooks={totalBooks}
+        onPageChange={handlePageChange}
+        onPageSizeChange={(nextSize) => {
+          setPageSize(nextSize);
+          setPage(1);
+        }}
+      />
     </Container>
   );
 }
