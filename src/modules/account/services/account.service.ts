@@ -39,6 +39,12 @@ export const accountService = {
   async createReview(input: CreateReviewInput): Promise<void> {
     await http.post('/reviews', input);
   },
+  async updateReview(
+    id: number,
+    input: { title: string; review: string; rating: number },
+  ): Promise<void> {
+    await http.put(`/reviews/${id}`, input);
+  },
   async reportReview(id: number): Promise<void> {
     await http.put(`/reviews/${id}?report=true`, {});
   },

@@ -4,9 +4,12 @@ import {
   Button,
   Container,
   Paper,
+  Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Bar,
@@ -17,16 +20,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
+import { ROUTES } from '@/constants';
 import { adminService } from '@/modules/admin/services/admin.service';
-import { useTranslation } from 'react-i18next';
-
-const sections = [
-  ['Books', 'books'],
-  ['Users', 'users'],
-  ['Reviews', 'reviews'],
-  ['Purchases', 'orders'],
-] as const;
 
 export default function AdminDashboardPage() {
   const { t } = useTranslation();
@@ -34,6 +29,14 @@ export default function AdminDashboardPage() {
     queryKey: ['admin', 'stats'],
     queryFn: adminService.stats,
   });
+
+  const sections = [
+    { label: t('booksSectionTitle'), path: 'books' },
+    { label: t('usersSectionTitle'), path: 'users' },
+    { label: t('reviewsSectionTitle'), path: 'reviews' },
+    { label: t('ordersSectionTitle'), path: 'orders' },
+  ] as const;
+
   const chartData =
     stats.data?.books.slice(0, 10).map((book) => ({
       title:
@@ -46,23 +49,53 @@ export default function AdminDashboardPage() {
       <Typography variant="h3" sx={{ mb: 3 }}>
         {t('adminDashboard')}
       </Typography>
+
       {stats.isError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          Analytics could not be loaded.
+        <Alert
+          severity="error"
+          sx={{ mb: 2 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => void stats.refetch()}
+            >
+              {t('retry')}
+            </Button>
+          }
+        >
+          {t('errorGeneric')}
         </Alert>
       )}
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
-        {sections.map(([label, path]) => (
+
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        spacing={1.5}
+        sx={{ mb: 4, flexWrap: 'wrap' }}
+      >
+        {sections.map((section) => (
           <Button
-            key={path}
+            key={section.path}
             component={Link}
-            to={`/admin/${path}`}
+            to={ROUTES.ADMIN_SECTION(section.path)}
             variant="outlined"
           >
-            {t('manage')} {label.toLowerCase()}
+            {t('manage')} · {section.label}
           </Button>
         ))}
       </Stack>
+
+      {stats.isPending && (
+        <Stack spacing={3} aria-busy="true">
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+            <Skeleton variant="rounded" height={116} sx={{ flex: 1 }} />
+            <Skeleton variant="rounded" height={116} sx={{ flex: 1 }} />
+            <Skeleton variant="rounded" height={116} sx={{ flex: 1 }} />
+          </Stack>
+          <Skeleton variant="rounded" height={420} />
+        </Stack>
+      )}
+
       {stats.data && (
         <>
           <Stack
@@ -70,26 +103,33 @@ export default function AdminDashboardPage() {
             spacing={2}
             sx={{ mb: 3 }}
           >
-            <Paper variant="outlined" sx={{ p: 3, flex: 1 }}>
-              <Typography color="text.secondary">
+            <Paper variant="outlined" sx={{ p: 3, flex: 1, borderRadius: 2 }}>
+              <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
                 {t('registeredReaders')}
               </Typography>
-              <Typography variant="h3">
+              <Typography variant="h3" sx={{ mt: 0.5 }}>
                 {stats.data.users.totalUsers}
               </Typography>
             </Paper>
-            <Paper variant="outlined" sx={{ p: 3, flex: 1 }}>
-              <Typography color="text.secondary">
+            <Paper variant="outlined" sx={{ p: 3, flex: 1, borderRadius: 2 }}>
+              <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
                 {t('booksInCatalog')}
               </Typography>
-              <Typography variant="h3">{stats.data.books.length}</Typography>
+              <Typography variant="h3" sx={{ mt: 0.5 }}>
+                {stats.data.books.length}
+              </Typography>
             </Paper>
-            <Paper variant="outlined" sx={{ p: 3, flex: 1 }}>
-              <Typography color="text.secondary">{t('purchases')}</Typography>
-              <Typography variant="h3">{stats.data.payments.length}</Typography>
+            <Paper variant="outlined" sx={{ p: 3, flex: 1, borderRadius: 2 }}>
+              <Typography color="text.secondary" sx={{ fontWeight: 600 }}>
+                {t('purchases')}
+              </Typography>
+              <Typography variant="h3" sx={{ mt: 0.5 }}>
+                {stats.data.payments.length}
+              </Typography>
             </Paper>
           </Stack>
-          <Paper variant="outlined" sx={{ p: 3 }}>
+
+          <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
             <Typography variant="h5" sx={{ mb: 2 }}>
               {t('topSelling')}
             </Typography>
@@ -108,7 +148,7 @@ export default function AdminDashboardPage() {
                   />
                   <YAxis allowDecimals={false} />
                   <Tooltip />
-                  <Bar dataKey="sold" fill="#225746" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="sold" fill="#674533" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </Box>

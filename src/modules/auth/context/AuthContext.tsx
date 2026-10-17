@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import {
   createContext,
   useCallback,
@@ -7,10 +8,11 @@ import {
   useState,
   type PropsWithChildren,
 } from 'react';
+import { STORAGE_KEYS } from '@/constants';
 import type { paths } from '@/interfaces/generated/api';
 import type { Session, User } from '@/interfaces/models';
-import { authService } from '@/modules/auth/services/auth.service';
 import { accountService } from '@/modules/account/services/account.service';
+import { authService } from '@/modules/auth/services/auth.service';
 
 type LoginInput =
   paths['/login']['post']['requestBody']['content']['application/json'];
@@ -50,20 +52,25 @@ function asUser(session: Session): User {
 }
 
 export function AuthProvider({ children }: PropsWithChildren) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(() =>
-    Boolean(localStorage.getItem('bookstore.token')),
+    Boolean(localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)),
   );
 
   const acceptSession = useCallback((session: Session) => {
-    localStorage.setItem('bookstore.token', session.token);
+    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, session.token);
     setUser(asUser(session));
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('bookstore.token');
+    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     setUser(null);
-  }, []);
+    queryClient.removeQueries({ queryKey: ['cart'] });
+    queryClient.removeQueries({ queryKey: ['favorites'] });
+    queryClient.removeQueries({ queryKey: ['orders'] });
+    queryClient.removeQueries({ queryKey: ['admin'] });
+  }, [queryClient]);
 
   useEffect(() => {
     const onUnauthorized = () => logout();
@@ -73,7 +80,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [logout]);
 
   useEffect(() => {
-    if (!localStorage.getItem('bookstore.token')) return;
+    if (!localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN)) return;
     authService
       .autoLogin()
       .then(acceptSession)
@@ -91,8 +98,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
       },
       updateProfile: async (input) => {
         if (!user) throw new Error('Sign in to update your profile');
-        await accountService.updateUser(user.ID, input);
-        setUser((current) => (current ? { ...current, ...input } : current));
+        const trimmed = {
+          name: input.name.trim(),
+          surname: input.surname.trim(),
+          email: input.email.trim(),
+        };
+        await accountService.updateUser(user.ID, trimmed);
+        setUser((current) => (current ? { ...current, ...trimmed } : current));
       },
       logout,
     }),

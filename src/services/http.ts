@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { STORAGE_KEYS } from '@/constants';
 
 const http = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3001',
@@ -7,7 +8,7 @@ const http = axios.create({
 });
 
 http.interceptors.request.use((config) => {
-  const token = localStorage.getItem('bookstore.token');
+  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });

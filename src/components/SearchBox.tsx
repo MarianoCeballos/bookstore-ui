@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import SearchIcon from '@mui/icons-material/Search';
 import {
   Autocomplete,
   Box,
@@ -7,9 +7,10 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { BookCover } from '@/components/BookCover';
 import type { Book } from '@/interfaces/models';
 import { useBooks } from '@/modules/catalog/hooks/useBooks';
 import { useDebouncedValue } from '@/modules/catalog/hooks/useDebouncedValue';
@@ -68,20 +69,21 @@ export default function SearchBox() {
           {...props}
           sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}
         >
-          <Box
-            component="img"
+          <BookCover
             src={option.image}
-            alt=""
+            title={option.title}
+            variant="compact"
             sx={{
               width: 40,
               height: 56,
-              objectFit: 'cover',
               borderRadius: 0.5,
               flexShrink: 0,
             }}
           />
           <Box sx={{ minWidth: 0 }}>
-            <Typography noWrap>{option.title}</Typography>
+            <Typography noWrap variant="body2" sx={{ fontWeight: 600 }}>
+              {option.title}
+            </Typography>
             {option.authors?.length > 0 && (
               <Typography variant="caption" color="text.secondary" noWrap>
                 {option.authors.join(', ')}

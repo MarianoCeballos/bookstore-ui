@@ -1,63 +1,35 @@
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import LanguageIcon from '@mui/icons-material/Language';
+import MenuIcon from '@mui/icons-material/Menu';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import {
   AppBar,
-  Avatar,
   Badge,
   Box,
   Button,
   Container,
-  Divider,
   IconButton,
-  ListItemIcon,
   Menu,
   MenuItem,
   Stack,
   Toolbar,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
-import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
-import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
-import LogoutIcon from '@mui/icons-material/Logout';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import LanguageIcon from '@mui/icons-material/Language';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { useTranslation } from 'react-i18next';
-import { useAuth } from '@/modules/auth/context/AuthContext';
-import { useCart } from '@/modules/account/context/CartContext';
-import { useFavorites } from '@/modules/account/context/FavoritesContext';
-import { useUi } from '@/modules/ui/context/UiContext';
-import i18n from '@/i18n';
 import bookLogo from '@/assets/Book_Logo.png';
 import SearchBox from '@/components/SearchBox';
-
-function getUserInitials(user: {
-  name?: string;
-  surname?: string;
-  username?: string;
-}): string {
-  const firstName = user.name?.trim() ?? '';
-  const lastName = user.surname?.trim() ?? '';
-  if (firstName && lastName) {
-    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-  }
-  if (firstName) {
-    const parts = firstName.split(/\s+/).filter(Boolean);
-    if (parts.length >= 2) {
-      return `${parts[0].charAt(0)}${parts[1].charAt(0)}`.toUpperCase();
-    }
-    return firstName.slice(0, 2).toUpperCase();
-  }
-  if (lastName) {
-    return lastName.slice(0, 2).toUpperCase();
-  }
-  return (user.username?.trim().slice(0, 2) || 'U').toUpperCase();
-}
+import { UserAccountMenu } from '@/components/UserAccountMenu';
+import { ROUTES } from '@/constants';
+import { useCart } from '@/modules/account/context/CartContext';
+import { useFavorites } from '@/modules/account/context/FavoritesContext';
+import { useAuth } from '@/modules/auth/context/AuthContext';
+import { useUi } from '@/modules/ui/context/UiContext';
 
 export default function AppShell() {
   const { user, logout } = useAuth();
@@ -67,38 +39,30 @@ export default function AppShell() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [navMenuAnchor, setNavMenuAnchor] = useState<HTMLElement | null>(null);
-  const [userMenuAnchor, setUserMenuAnchor] = useState<HTMLElement | null>(
-    null,
-  );
 
   const navLinks = [
-    { label: t('home'), to: '/' },
-    { label: t('browse'), to: '/books' },
-    { label: t('contact'), to: '/contact' },
+    { label: t('home'), to: ROUTES.HOME },
+    { label: t('browse'), to: ROUTES.BOOKS },
+    { label: t('contact'), to: ROUTES.CONTACT },
   ];
 
   const isActiveLink = (to: string) =>
-    to === '/'
-      ? location.pathname === '/'
+    to === ROUTES.HOME
+      ? location.pathname === ROUTES.HOME
       : location.pathname === to || location.pathname.startsWith(`${to}/`);
 
-  const changeLanguage = async () => {
+  const changeLanguage = () => {
     const next = language === 'en' ? 'es' : 'en';
     setLanguage(next);
-    await i18n.changeLanguage(next);
   };
 
-  const fullName = user
-    ? [user.name, user.surname].filter(Boolean).join(' ').trim() ||
-      user.username
-    : '';
-  const initials = user ? getUserInitials(user) : '';
-
   const handleLogout = () => {
-    setUserMenuAnchor(null);
     logout();
-    navigate('/');
+    navigate(ROUTES.HOME);
   };
 
   return (
@@ -119,7 +83,7 @@ export default function AppShell() {
             sx={{ gap: { xs: 1, md: 2 }, minHeight: '64px !important' }}
           >
             <IconButton
-              aria-label="Open navigation"
+              aria-label={t('openNavigation')}
               onClick={(event) => setNavMenuAnchor(event.currentTarget)}
               sx={{
                 display: { xs: 'inline-flex', md: 'none' },
@@ -131,7 +95,7 @@ export default function AppShell() {
 
             <Box
               component={Link}
-              to="/"
+              to={ROUTES.HOME}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
@@ -188,16 +152,17 @@ export default function AppShell() {
               })}
             </Stack>
 
-            <Box
-              sx={{
-                flex: 1,
-                maxWidth: 340,
-                ml: 'auto',
-                display: { xs: 'none', sm: 'block' },
-              }}
-            >
-              <SearchBox />
-            </Box>
+            {!isSmallScreen && (
+              <Box
+                sx={{
+                  flex: 1,
+                  maxWidth: 340,
+                  ml: 'auto',
+                }}
+              >
+                <SearchBox />
+              </Box>
+            )}
 
             <Stack
               direction="row"
@@ -206,6 +171,7 @@ export default function AppShell() {
             >
               <Button
                 onClick={changeLanguage}
+                aria-label={t('languageSelector')}
                 color="inherit"
                 size="small"
                 startIcon={<LanguageIcon fontSize="small" />}
@@ -227,7 +193,7 @@ export default function AppShell() {
                     <IconButton
                       aria-label={t('favorites')}
                       component={Link}
-                      to="/favorites"
+                      to={ROUTES.FAVORITES}
                       color="inherit"
                     >
                       <Badge badgeContent={favorites.length} color="primary">
@@ -240,7 +206,7 @@ export default function AppShell() {
                     <IconButton
                       aria-label={t('cart')}
                       component={Link}
-                      to="/cart"
+                      to={ROUTES.CART}
                       color="inherit"
                     >
                       <Badge badgeContent={cart.length} color="primary">
@@ -249,164 +215,12 @@ export default function AppShell() {
                     </IconButton>
                   </Tooltip>
 
-                  <Button
-                    aria-label={t('account')}
-                    aria-controls={
-                      userMenuAnchor ? 'user-account-menu' : undefined
-                    }
-                    aria-haspopup="true"
-                    aria-expanded={Boolean(userMenuAnchor)}
-                    onClick={(event) => setUserMenuAnchor(event.currentTarget)}
-                    color="inherit"
-                    sx={{
-                      p: 0.5,
-                      pl: 0.75,
-                      pr: 1,
-                      minWidth: 'auto',
-                      borderRadius: 999,
-                      gap: 0.75,
-                      border: '1px solid rgba(30, 17, 11, 0.2)',
-                      bgcolor: 'rgba(255, 250, 240, 0.45)',
-                      '&:hover': {
-                        bgcolor: 'rgba(255, 250, 240, 0.75)',
-                      },
-                    }}
-                  >
-                    <Avatar
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        bgcolor: '#674533',
-                        color: '#fffaf0',
-                        fontSize: 13,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {initials}
-                    </Avatar>
-                    <KeyboardArrowDownIcon
-                      fontSize="small"
-                      sx={{
-                        transition: 'transform 0.2s',
-                        transform: userMenuAnchor ? 'rotate(180deg)' : 'none',
-                      }}
-                    />
-                  </Button>
-
-                  <Menu
-                    id="user-account-menu"
-                    anchorEl={userMenuAnchor}
-                    open={Boolean(userMenuAnchor)}
-                    onClose={() => setUserMenuAnchor(null)}
-                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                    slotProps={{
-                      paper: {
-                        elevation: 4,
-                        sx: {
-                          mt: 1,
-                          minWidth: 230,
-                          borderRadius: 2,
-                          bgcolor: '#fffaf0',
-                          border: '1px solid rgba(103, 69, 51, 0.2)',
-                        },
-                      },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        px: 2,
-                        py: 1.5,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1.5,
-                      }}
-                    >
-                      <Avatar
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          bgcolor: '#674533',
-                          color: '#fffaf0',
-                          fontSize: 15,
-                          fontWeight: 700,
-                        }}
-                      >
-                        {initials}
-                      </Avatar>
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography
-                          variant="subtitle2"
-                          sx={{ fontWeight: 700 }}
-                          noWrap
-                        >
-                          {fullName}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ display: 'block' }}
-                          noWrap
-                        >
-                          {user.email}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    <Divider />
-
-                    <MenuItem
-                      component={Link}
-                      to="/account"
-                      onClick={() => setUserMenuAnchor(null)}
-                    >
-                      <ListItemIcon>
-                        <PersonOutlinedIcon fontSize="small" />
-                      </ListItemIcon>
-                      {t('account')}
-                    </MenuItem>
-
-                    <MenuItem
-                      component={Link}
-                      to="/history"
-                      onClick={() => setUserMenuAnchor(null)}
-                    >
-                      <ListItemIcon>
-                        <ReceiptLongOutlinedIcon fontSize="small" />
-                      </ListItemIcon>
-                      {t('purchaseHistory')}
-                    </MenuItem>
-
-                    {user.admin && (
-                      <MenuItem
-                        component={Link}
-                        to="/admin"
-                        onClick={() => setUserMenuAnchor(null)}
-                      >
-                        <ListItemIcon>
-                          <AdminPanelSettingsOutlinedIcon fontSize="small" />
-                        </ListItemIcon>
-                        {t('adminDashboard')}
-                      </MenuItem>
-                    )}
-
-                    <Divider />
-
-                    <MenuItem
-                      onClick={handleLogout}
-                      sx={{ color: 'error.main' }}
-                    >
-                      <ListItemIcon sx={{ color: 'error.main' }}>
-                        <LogoutIcon fontSize="small" />
-                      </ListItemIcon>
-                      {t('signOut')}
-                    </MenuItem>
-                  </Menu>
+                  <UserAccountMenu user={user} onLogout={handleLogout} />
                 </>
               ) : (
                 <Button
                   component={Link}
-                  to="/login"
+                  to={ROUTES.LOGIN}
                   variant="contained"
                   sx={{ borderRadius: 1.5, px: 2 }}
                 >
@@ -442,6 +256,12 @@ export default function AppShell() {
               ))}
             </Menu>
           </Toolbar>
+
+          {isSmallScreen && (
+            <Box sx={{ pb: 1.25 }}>
+              <SearchBox />
+            </Box>
+          )}
         </Container>
       </AppBar>
       <Box component="main" sx={{ flex: 1, py: { xs: 2, md: 3 } }}>
@@ -449,11 +269,11 @@ export default function AppShell() {
       </Box>
       <Box
         component="footer"
-        sx={{ py: 2, bgcolor: '#674533e6', color: '#fffaf0' }}
+        sx={{ py: 2, bgcolor: '#4a2f22', color: '#fffaf0' }}
       >
         <Container maxWidth="xl">
           <Typography variant="body2">
-            © {new Date().getFullYear()} Bookstore · Stories worth keeping.
+            © {new Date().getFullYear()} Bookstore · {t('footerTagline')}
           </Typography>
         </Container>
       </Box>
