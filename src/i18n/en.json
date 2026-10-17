@@ -120,5 +120,7 @@
   "newPassword": "New password",
   "confirmPassword": "Confirm new password",
   "savePassword": "Save password",
-  "paymentUpdate": "Payment update"
+  "paymentUpdate": "Payment update",
+  "showingResults": "Showing {{start}}–{{end}} of {{total}} books",
+  "perPage": "Per page"
 }
