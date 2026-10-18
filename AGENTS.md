@@ -2,7 +2,7 @@
 
 ## Stack & Architecture
 
-- **Framework**: React 19 + TypeScript 5.8 + Vite 8 + Material UI v7
+- **Framework**: React 19 + TypeScript 5.9 + Vite 8 + Material UI v9.5
 - **State & Data**: TanStack React Query v5 + Axios (`src/services/http.ts`) + compact React Contexts (`AuthContext`, `CartContext`, `FavoritesContext`, `UiContext`)
 - **Forms & Validation**: `react-hook-form` + `yup` / `zod` with localized validation keys
 - **Localization**: `react-i18next` (`src/i18n/en.json`, `src/i18n/es.json`) persisted under `localStorage['bookstore.language']` (`STORAGE_KEYS.LANGUAGE`)
@@ -27,6 +27,6 @@
 - Do not hand-edit `src/interfaces/generated/api.ts`.
 - Keep 100% key parity between `src/i18n/en.json` and `src/i18n/es.json`.
 - Avoid synchronous `setState` inside `useEffect` (`react-hooks/set-state-in-effect` is enforced).
-- Pass MUI v7 layout/typography shorthand props (`alignItems`, `justifyContent`, `fontWeight`, `lineHeight`) inside `sx={{ ... }}`.
+- Pass MUI v9.5 layout/typography shorthand props (`alignItems`, `justifyContent`, `fontWeight`, `lineHeight`) inside `sx={{ ... }}`.
 - Never modify `.github/`, `Dockerfile`, or `nginx.conf`.
 - Reference: `docs/ARCHITECTURE.md` and `docs/AUDIT_AND_REFACTORING.md`.

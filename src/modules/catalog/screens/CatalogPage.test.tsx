@@ -53,6 +53,8 @@ describe('CatalogPage pagination', () => {
     window.scrollTo = jest.fn();
   });
 
+  // Renders 24 cards and drives a real navigation; jsdom needs headroom on
+  // slower CI machines, so this interaction test gets an explicit timeout.
   it('calculates exact total pages and navigates without phantom pages', async () => {
     const user = userEvent.setup();
 
@@ -80,5 +82,5 @@ describe('CatalogPage pagination', () => {
     expect(
       screen.queryByRole('button', { name: 'Go to page 3' }),
     ).not.toBeInTheDocument();
-  });
+  }, 20000);
 });

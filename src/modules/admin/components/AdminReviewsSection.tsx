@@ -48,6 +48,8 @@ export function AdminReviewsSection() {
     <>
       <DataTable
         loading={reviewsQuery.isPending}
+        error={reviewsQuery.isError}
+        onRetry={() => void reviewsQuery.refetch()}
         rows={reviewsQuery.data ?? []}
         getRowKey={(item) => item.ID}
         columns={[

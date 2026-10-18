@@ -227,6 +227,22 @@ function PriceRangeFilter({
   const [range, setRange] = useState<[number, number]>([lower, upper]);
   const [synced, setSynced] = useState<[number, number]>([lower, upper]);
 
+  // Typed values stay local until blur/Enter, so typing does not push a
+  // history entry (and reset the page to 1) on every keystroke. `source`
+  // records the committed values the draft came from, which lets the visible
+  // text fall back to the URL whenever it changes under us.
+  const minText = minPrice === null ? '' : String(minPrice);
+  const maxText = maxPrice === null ? '' : String(maxPrice);
+  const [draft, setDraft] = useState({
+    min: minText,
+    max: maxText,
+    source: [minPrice, maxPrice] as [number | null, number | null],
+  });
+  const displayed =
+    draft.source[0] === minPrice && draft.source[1] === maxPrice
+      ? { min: draft.min, max: draft.max }
+      : { min: minText, max: maxText };
+
   // Keep the slider in step with the URL without an effect.
   if (synced[0] !== lower || synced[1] !== upper) {
     setSynced([lower, upper]);
@@ -240,14 +256,23 @@ function PriceRangeFilter({
     });
   };
 
-  const handleInputChange = (key: 'minPrice' | 'maxPrice', raw: string) => {
-    if (raw.trim() === '') {
-      onChange({ [key]: null });
-      return;
+  const commitInput = (key: 'minPrice' | 'maxPrice') => {
+    const field = key === 'minPrice' ? 'min' : 'max';
+    const raw = displayed[field].trim();
+    const parsed = raw === '' ? null : Number(raw);
+    const next =
+      parsed !== null && Number.isFinite(parsed)
+        ? Math.max(0, Math.round(parsed))
+        : null;
+    const text = next === null ? '' : String(next);
+    setDraft({
+      min: field === 'min' ? text : displayed.min,
+      max: field === 'max' ? text : displayed.max,
+      source: [minPrice, maxPrice],
+    });
+    if (next !== (field === 'min' ? minPrice : maxPrice)) {
+      onChange({ [key]: next });
     }
-    const parsed = Number(raw);
-    if (!Number.isFinite(parsed)) return;
-    onChange({ [key]: Math.max(0, Math.round(parsed)) });
   };
 
   return (
@@ -269,10 +294,18 @@ function PriceRangeFilter({
           type="number"
           fullWidth
           label={t('priceMin')}
-          value={minPrice ?? ''}
+          value={displayed.min}
           onChange={(event) =>
-            handleInputChange('minPrice', event.target.value)
+            setDraft({
+              min: event.target.value,
+              max: displayed.max,
+              source: [minPrice, maxPrice],
+            })
           }
+          onBlur={() => commitInput('minPrice')}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') commitInput('minPrice');
+          }}
           slotProps={{
             htmlInput: {
               min: bounds.min,
@@ -286,10 +319,18 @@ function PriceRangeFilter({
           type="number"
           fullWidth
           label={t('priceMax')}
-          value={maxPrice ?? ''}
+          value={displayed.max}
           onChange={(event) =>
-            handleInputChange('maxPrice', event.target.value)
+            setDraft({
+              min: displayed.min,
+              max: event.target.value,
+              source: [minPrice, maxPrice],
+            })
           }
+          onBlur={() => commitInput('maxPrice')}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') commitInput('maxPrice');
+          }}
           slotProps={{
             htmlInput: {
               min: bounds.min,

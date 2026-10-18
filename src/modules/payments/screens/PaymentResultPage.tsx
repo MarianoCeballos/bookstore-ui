@@ -8,12 +8,15 @@ import {
   Typography,
 } from '@mui/material';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ROUTES } from '@/constants';
 import { paymentsService } from '@/modules/payments/services/payments.service';
+
+/** Order statuses that mean the payment will not complete. */
+const FAILED_ORDER_STATUSES = ['rejected', 'cancelled', 'canceled', 'failed'];
 
 export default function PaymentResultPage() {
   const { t } = useTranslation();
@@ -25,11 +28,27 @@ export default function PaymentResultPage() {
 
   const [resolved, setResolved] = useState<{
     paymentId: string;
-    outcome: 'approved' | 'pending' | 'error';
+    outcome: 'approved' | 'pending' | 'declined' | 'error';
   } | null>(null);
+
+  // Read the latest translator inside the effect without re-running the
+  // verification request on every language switch.
+  const latestT = useRef(t);
+  useEffect(() => {
+    latestT.current = t;
+  }, [t]);
+
+  // The URL status is only a hint for classifying a non-approved payment; read
+  // it through a ref so the request is keyed by the payment id alone.
+  const latestStatus = useRef(statusParam);
+  useEffect(() => {
+    latestStatus.current = statusParam;
+  }, [statusParam]);
 
   useEffect(() => {
     if (!paymentId) return;
+    let cancelled = false;
+
     paymentsService
       .verify(paymentId)
       .then(async (order) => {
@@ -37,36 +56,56 @@ export default function PaymentResultPage() {
           queryClient.invalidateQueries({ queryKey: ['cart'] }),
           queryClient.invalidateQueries({ queryKey: ['orders'] }),
         ]);
+        // A later payment id may have replaced this one while in flight.
+        if (cancelled) return;
         const normalized = order.status.toLowerCase();
         if (
           normalized.includes('approved') ||
           normalized.includes('completed')
         ) {
           setResolved({ paymentId, outcome: 'approved' });
-          toast.success(t('paymentUpdate'), {
-            description: t('paymentApproved'),
+          toast.success(latestT.current('paymentUpdate'), {
+            description: latestT.current('paymentApproved'),
+          });
+        } else if (
+          latestStatus.current === 'failure' ||
+          FAILED_ORDER_STATUSES.includes(normalized)
+        ) {
+          setResolved({ paymentId, outcome: 'declined' });
+          toast.warning(latestT.current('paymentUpdate'), {
+            description: latestT.current('paymentDeclined'),
           });
         } else {
           setResolved({ paymentId, outcome: 'pending' });
-          toast.info(t('paymentUpdate'), {
-            description: t('paymentPending'),
+          toast.info(latestT.current('paymentUpdate'), {
+            description: latestT.current('paymentPending'),
           });
         }
       })
       .catch(() => {
+        if (cancelled) return;
         setResolved({ paymentId, outcome: 'error' });
-        toast.warning(t('paymentUpdate'), {
-          description: t('paymentVerifyError'),
+        toast.warning(latestT.current('paymentUpdate'), {
+          description: latestT.current('paymentVerifyError'),
         });
       });
-  }, [paymentId, queryClient, t]);
 
-  const verifyState: 'idle' | 'loading' | 'approved' | 'pending' | 'error' =
-    !paymentId
-      ? 'idle'
-      : resolved?.paymentId === paymentId
-        ? resolved.outcome
-        : 'loading';
+    return () => {
+      cancelled = true;
+    };
+  }, [paymentId, queryClient]);
+
+  const verifyState:
+    | 'idle'
+    | 'loading'
+    | 'approved'
+    | 'pending'
+    | 'declined'
+    | 'error' = !paymentId
+    ? 'idle'
+    : resolved?.paymentId === paymentId
+      ? resolved.outcome
+      : 'loading';
 
   const renderFeedback = () => {
     if (verifyState === 'loading') {
@@ -83,6 +122,13 @@ export default function PaymentResultPage() {
       return (
         <Alert severity="success" sx={{ width: '100%' }}>
           {t('paymentApproved')}
+        </Alert>
+      );
+    }
+    if (verifyState === 'declined') {
+      return (
+        <Alert severity="warning" sx={{ width: '100%' }}>
+          {t('paymentDeclined')}
         </Alert>
       );
     }

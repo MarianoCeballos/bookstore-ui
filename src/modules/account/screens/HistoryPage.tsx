@@ -17,6 +17,7 @@ import { ROUTES } from '@/constants';
 import { useOrders } from '@/modules/catalog/hooks/useCatalogQueries';
 import { useUi } from '@/modules/ui/context/UiContext';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { getOrderStatusLabel } from '@/utils/orderStatus';
 
 export default function HistoryPage() {
   const { t } = useTranslation();
@@ -42,7 +43,9 @@ export default function HistoryPage() {
               {t('retry')}
             </Button>
           }
-        ></Alert>
+        >
+          {t('errorGeneric')}
+        </Alert>
       )}
 
       {orders.isPending && (
@@ -84,7 +87,7 @@ export default function HistoryPage() {
                     {t('order')} #{order.ID}
                   </Typography>
                   <Chip
-                    label={order.status}
+                    label={getOrderStatusLabel(order.status, t)}
                     size="small"
                     color={
                       order.status.toLowerCase().includes('approved') ||

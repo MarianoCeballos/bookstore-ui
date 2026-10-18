@@ -59,6 +59,25 @@ export function AdminChartsSection({ stats }: { stats: AdminStats }) {
   const { t } = useTranslation();
   const { language } = useUi();
 
+  /**
+   * `buildDailySales` emits local `YYYY-MM-DD` keys. Parsing those with
+   * `new Date()` treats them as UTC and can shift the label one day back in
+   * west-of-UTC timezones, so rebuild the date in local time instead.
+   */
+  const formatSalesDay = (
+    value: unknown,
+    options: Intl.DateTimeFormatOptions,
+  ) => {
+    const raw = String(value);
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+    const date = match
+      ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+      : new Date(raw);
+    return Number.isNaN(date.getTime())
+      ? raw
+      : formatDate(date, language, options);
+  };
+
   const topBooks = [...stats.books]
     .sort((a, b) => b.soldCopies - a.soldCopies)
     .slice(0, 10)
@@ -192,7 +211,7 @@ export function AdminChartsSection({ stats }: { stats: AdminStats }) {
                 tick={CHART_AXIS_TICK}
                 minTickGap={24}
                 tickFormatter={(value) =>
-                  formatDate(String(value), language, {
+                  formatSalesDay(value, {
                     month: 'short',
                     day: 'numeric',
                   })
@@ -204,7 +223,7 @@ export function AdminChartsSection({ stats }: { stats: AdminStats }) {
                 labelStyle={{ color: '#1e110b', fontWeight: 600 }}
                 formatter={(value) => formatCurrency(Number(value), language)}
                 labelFormatter={(value) =>
-                  formatDate(String(value), language, {
+                  formatSalesDay(value, {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric',

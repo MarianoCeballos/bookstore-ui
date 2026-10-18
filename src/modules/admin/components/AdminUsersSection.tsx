@@ -141,6 +141,8 @@ export function AdminUsersSection() {
 
       <DataTable<User>
         loading={usersQuery.isPending}
+        error={usersQuery.isError}
+        onRetry={() => void usersQuery.refetch()}
         rows={visibleUsers}
         getRowKey={(item) => item.ID}
         columns={[

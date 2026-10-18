@@ -129,7 +129,9 @@ export function BookReviewsSection({
     } catch (error) {
       toast.error(getLocalizedErrorMessage(error, t));
     } finally {
-      setReportingReviewId(null);
+      setReportingReviewId((current) =>
+        current === reviewId ? null : current,
+      );
     }
   };
 

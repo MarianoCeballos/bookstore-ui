@@ -85,13 +85,18 @@ const withFilters = (overrides: Partial<CatalogFilters>): CatalogFilters => ({
 const titlesOf = (list: Book[]): string[] => list.map((book) => book.title);
 
 describe('parseCatalogFilters', () => {
-  it('reads repeated and comma separated facet params', () => {
+  it('reads repeated facet params and keeps commas inside a value', () => {
     const params = new URLSearchParams(
-      'category=Sci-Fi&category=Classics&author=Frank+Herbert,Isaac+Asimov',
+      'category=Sci-Fi&category=Classics&author=Frank+Herbert&author=Isaac+Asimov',
     );
     const filters = parseCatalogFilters(params);
     expect(filters.categories).toEqual(['Sci-Fi', 'Classics']);
     expect(filters.authors).toEqual(['Frank Herbert', 'Isaac Asimov']);
+
+    const commaValue = parseCatalogFilters(
+      new URLSearchParams('category=Body%2C+Mind+%26+Spirit'),
+    );
+    expect(commaValue.categories).toEqual(['Body, Mind & Spirit']);
   });
 
   it('deduplicates case-insensitively and keeps the first spelling', () => {

@@ -23,7 +23,8 @@ export const INITIAL_BOOK: BookInput = {
   language: 'English',
 };
 
-export const PRICE_PATTERN = /^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/;
+export const PRICE_PATTERN =
+  /^(?:0\.(?:0[1-9]|[1-9]\d?)|[1-9]\d{0,9}(?:\.\d{1,2})?)$/;
 
 export const RECENT_ORDERS_LIMIT = 5;
 

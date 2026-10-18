@@ -20,11 +20,15 @@ import { formatDate } from '@/utils/format';
 interface AccountReviewsSectionProps {
   reviews: Review[];
   isPending: boolean;
+  isError?: boolean;
+  onRetry?: () => void;
 }
 
 export function AccountReviewsSection({
   reviews,
   isPending,
+  isError = false,
+  onRetry,
 }: AccountReviewsSectionProps) {
   const { t } = useTranslation();
   const { language } = useUi();
@@ -64,7 +68,17 @@ export function AccountReviewsSection({
         </Stack>
       )}
 
-      {!isPending && reviews.length === 0 && (
+      {!isPending && isError && (
+        <PageStateCard
+          variant="error"
+          title={t('errorGeneric')}
+          description={t('myReviewsErrorDescription')}
+          actionLabel={t('retry')}
+          onAction={onRetry}
+        />
+      )}
+
+      {!isPending && !isError && reviews.length === 0 && (
         <PageStateCard
           title={t('myReviewsEmptyTitle')}
           description={t('myReviewsEmptyDescription')}
@@ -74,7 +88,7 @@ export function AccountReviewsSection({
         />
       )}
 
-      {!isPending && reviews.length > 0 && (
+      {!isPending && !isError && reviews.length > 0 && (
         <Stack spacing={2}>
           {reviews.map((review) => (
             <Paper

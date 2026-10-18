@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
@@ -45,7 +45,15 @@ export function ProfileDetailsForm({ user }: ProfileDetailsFormProps) {
 
   const { ID, username, name, surname, email } = user;
 
+  // Refresh the fields when a different account is loaded, or when the stored
+  // user changes while the form is untouched. A background refresh of `user`
+  // (auto-login, profile update) must not discard in-progress edits.
+  const previousUserIdRef = useRef(user.ID);
+
   useEffect(() => {
+    const userIdChanged = previousUserIdRef.current !== ID;
+    if (!userIdChanged && profileForm.formState.isDirty) return;
+    previousUserIdRef.current = ID;
     profileForm.reset({
       username: username ?? '',
       name: name ?? '',

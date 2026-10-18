@@ -86,4 +86,11 @@ describe('format utilities', () => {
     );
     expect(getUserInitials()).toBe('?');
   });
+
+  it('derives initials without splitting astral characters', () => {
+    expect(getUserInitials({ name: '😀 Ada', surname: 'Lovelace' })).toBe(
+      '😀L',
+    );
+    expect(getUserInitials({ username: '😀reader' })).toBe('😀R');
+  });
 });

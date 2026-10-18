@@ -36,7 +36,9 @@ const toFiniteNumber = (value: string | null): number | null => {
 
 const readList = (params: URLSearchParams, key: string): string[] => {
   const unique = new Map<string, string>();
-  for (const raw of params.getAll(key).flatMap((value) => value.split(','))) {
+  // Values are written as repeated params; never split on commas because facet
+  // values legitimately contain them (e.g. "Body, Mind & Spirit").
+  for (const raw of params.getAll(key)) {
     const value = raw.trim();
     if (value && !unique.has(normalize(value)))
       unique.set(normalize(value), value);

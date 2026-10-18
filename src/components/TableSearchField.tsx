@@ -41,6 +41,7 @@ export function TableSearchField({
                 <IconButton
                   edge="end"
                   size="small"
+                  disabled={disabled}
                   aria-label={t('clearSearch')}
                   onClick={() => onChange('')}
                 >

@@ -31,7 +31,11 @@ export default function FavoritesPage() {
         description: book.title,
         action: {
           label: t('undo'),
-          onClick: () => void add(book.ID),
+          onClick: () => {
+            add(book.ID).catch((err: unknown) =>
+              toast.error(getLocalizedErrorMessage(err, t)),
+            );
+          },
         },
       });
     } catch (err) {

@@ -57,6 +57,8 @@ export default function AccountPage() {
         <AccountReviewsSection
           reviews={reviews}
           isPending={userReviews.isPending}
+          isError={userReviews.isError}
+          onRetry={() => void userReviews.refetch()}
         />
       </Stack>
     </Container>

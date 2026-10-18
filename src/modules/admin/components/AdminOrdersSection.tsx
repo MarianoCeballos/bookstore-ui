@@ -5,6 +5,7 @@ import { DataTable } from '@/modules/admin/components/DataTable';
 import { adminService } from '@/modules/admin/services/admin.service';
 import { useUi } from '@/modules/ui/context/UiContext';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { getOrderStatusLabel } from '@/utils/orderStatus';
 
 export function AdminOrdersSection() {
   const { t } = useTranslation();
@@ -18,6 +19,8 @@ export function AdminOrdersSection() {
   return (
     <DataTable
       loading={ordersQuery.isPending}
+      error={ordersQuery.isError}
+      onRetry={() => void ordersQuery.refetch()}
       rows={ordersQuery.data ?? []}
       getRowKey={(item) => item.ID}
       columns={[
@@ -28,8 +31,8 @@ export function AdminOrdersSection() {
           render: (item) => `#${item.ID}`,
         },
         {
-          id: 'publishedDate',
-          label: t('publishedDate'),
+          id: 'orderDate',
+          label: t('orderDate'),
           sortValue: (item) => new Date(item.createdAt).getTime(),
           render: (item) =>
             formatDate(item.createdAt, language, {
@@ -45,7 +48,11 @@ export function AdminOrdersSection() {
           label: t('status'),
           sortValue: (item) => item.status,
           render: (item) => (
-            <Chip size="small" label={item.status} variant="outlined" />
+            <Chip
+              size="small"
+              label={getOrderStatusLabel(item.status, t)}
+              variant="outlined"
+            />
           ),
         },
         {

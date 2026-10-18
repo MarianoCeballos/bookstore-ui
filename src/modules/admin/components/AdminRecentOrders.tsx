@@ -57,8 +57,8 @@ export function AdminRecentOrders({
         emptyMessage={t('noSalesYet')}
         columns={[
           {
-            id: 'publishedDate',
-            label: t('publishedDate'),
+            id: 'orderDate',
+            label: t('orderDate'),
             sortValue: (order) => new Date(order.createdAt).getTime(),
             render: (order) =>
               formatDate(order.createdAt, language, {

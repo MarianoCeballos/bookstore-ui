@@ -16,7 +16,7 @@ import { RegisterForm } from '@/modules/auth/components/RegisterForm';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { authService } from '@/modules/auth/services/auth.service';
 import type { LoginInput, RegisterInput } from '@/modules/auth/types';
-import { getLocalizedErrorMessage } from '@/utils/error';
+import { getErrorMessageKey, getLocalizedErrorMessage } from '@/utils/error';
 
 export default function AuthPage({ register = false }: { register?: boolean }) {
   const { t } = useTranslation();
@@ -53,7 +53,9 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
     } catch (err) {
       const msg = getLocalizedErrorMessage(err, t, 'errorInvalidCredentials');
       setError(msg);
-      if (msg === t('errorConfirmEmailFirst')) {
+      // Decide from the error itself (mapped server message) rather than from
+      // the localized text, which changes with the active language.
+      if (getErrorMessageKey(err) === 'errorConfirmEmailFirst') {
         setUnconfirmedUsername(input.username);
         toast.warning(msg, {
           description: `@${input.username}`,

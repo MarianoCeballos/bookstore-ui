@@ -4,8 +4,7 @@ export function formatCurrency(
   value: string | number | null | undefined,
   locale = 'en',
 ): string {
-  const numericValue =
-    typeof value === 'string' ? Number.parseFloat(value) : Number(value ?? 0);
+  const numericValue = Number(value ?? 0);
   const safeAmount = Number.isFinite(numericValue) ? numericValue : 0;
   const resolvedLocale = locale.startsWith('es') ? 'es-AR' : 'en-US';
   let formatter = currencyFormatters.get(resolvedLocale);
@@ -27,8 +26,7 @@ export function formatNumber(
   value: number | string | null | undefined,
   locale = 'en',
 ): string {
-  const numericValue =
-    typeof value === 'string' ? Number.parseFloat(value) : Number(value ?? 0);
+  const numericValue = Number(value ?? 0);
   const safeAmount = Number.isFinite(numericValue) ? numericValue : 0;
   const resolvedLocale = locale.startsWith('es') ? 'es-AR' : 'en-US';
   let formatter = numberFormatters.get(resolvedLocale);
@@ -61,6 +59,10 @@ export function formatDate(
   return new Intl.DateTimeFormat(resolvedLocale, options).format(parsed);
 }
 
+/** Takes the first `count` Unicode code points so astral characters stay whole. */
+const firstCodePoints = (value: string, count = 1): string =>
+  Array.from(value).slice(0, count).join('');
+
 export function getUserInitials(
   user?: {
     name?: string;
@@ -73,14 +75,14 @@ export function getUserInitials(
   ) as string[];
   if (fullParts.length > 0) {
     return fullParts
-      .map((part) => part[0] ?? '')
-      .join('')
+      .map((part) => firstCodePoints(part))
       .slice(0, 2)
+      .join('')
       .toUpperCase();
   }
   const username = user?.username?.trim() ?? '';
   if (username.length > 0) {
-    return username.slice(0, 2).toUpperCase();
+    return firstCodePoints(username, 2).toUpperCase();
   }
   return '?';
 }

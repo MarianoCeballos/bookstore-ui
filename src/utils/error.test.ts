@@ -66,13 +66,13 @@ describe('getLocalizedErrorMessage', () => {
     ).toBe(t('errorInvalidCredentials'));
   });
 
-  it('keeps an unknown client error message but hides an unknown server error', () => {
+  it('localizes unknown client and server errors instead of exposing the raw text', () => {
     expect(
       getLocalizedErrorMessage(
         responseError({ message: '  Custom validation failure  ' }, 422),
         t,
       ),
-    ).toBe('Custom validation failure');
+    ).toBe(t('errorGeneric'));
     expect(
       getLocalizedErrorMessage(
         responseError({ message: 'Internal database detail' }, 500),

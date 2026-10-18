@@ -111,7 +111,11 @@ export function BookDetailHero({ book, reviewCount }: BookDetailHeroProps) {
           description: book.title,
           action: {
             label: t('undo'),
-            onClick: () => void addFavorite(book.ID),
+            onClick: () => {
+              addFavorite(book.ID).catch((error: unknown) =>
+                toast.error(getLocalizedErrorMessage(error, t)),
+              );
+            },
           },
         });
       } else {

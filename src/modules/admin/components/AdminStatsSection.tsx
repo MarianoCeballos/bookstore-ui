@@ -13,7 +13,7 @@ export function AdminStatsSection() {
     queryFn: adminService.stats,
   });
 
-  if (stats.isError) {
+  if (stats.isError && !stats.data) {
     return (
       <Alert
         severity="error"
@@ -26,7 +26,9 @@ export function AdminStatsSection() {
             {t('retry')}
           </Button>
         }
-      ></Alert>
+      >
+        {t('errorGeneric')}
+      </Alert>
     );
   }
 
@@ -36,6 +38,23 @@ export function AdminStatsSection() {
 
   return (
     <>
+      {stats.isError && (
+        <Alert
+          severity="warning"
+          sx={{ mb: 2 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => void stats.refetch()}
+            >
+              {t('retry')}
+            </Button>
+          }
+        >
+          {t('statsRefreshError')}
+        </Alert>
+      )}
       <AdminStatGrid stats={stats.data} />
       <AdminChartsSection stats={stats.data} />
     </>

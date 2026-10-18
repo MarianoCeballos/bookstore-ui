@@ -24,6 +24,15 @@ describe('admin stats utilities', () => {
     ).toBe(5);
   });
 
+  it('ignores totals that only start with a valid number', () => {
+    expect(
+      sumRevenue([
+        { items: 1, createdAt: '2026-01-01T00:00:00.000Z', total: '19.90oops' },
+        { items: 1, createdAt: '2026-01-02T00:00:00.000Z', total: '2.5' },
+      ]),
+    ).toBeCloseTo(2.5);
+  });
+
   it('aggregates payments into an ascending per-day series', () => {
     const series = buildDailySales([
       { items: 1, createdAt: '2026-02-02T10:00:00.000Z', total: '10.00' },
@@ -54,7 +63,7 @@ describe('admin stats utilities', () => {
     ]);
   });
 
-  it('ignores invalid dates entirely and preserves input ordering', () => {
+  it('ignores invalid dates entirely and keeps the series ascending', () => {
     const payments = [
       { total: '10', items: 1, createdAt: '2026-02-02T12:00:00' },
       { total: '99', items: 1, createdAt: 'not-a-date' },
@@ -62,8 +71,25 @@ describe('admin stats utilities', () => {
     ];
     expect(buildDailySales(payments)).toEqual([
       { date: '2026-01-31', revenue: 5, orders: 1 },
+      { date: '2026-02-01', revenue: 0, orders: 0 },
       { date: '2026-02-02', revenue: 10, orders: 1 },
     ]);
     expect(payments.map((payment) => payment.total)).toEqual(['10', '99', '5']);
+  });
+
+  it('keeps no-sale days between payments as zero points', () => {
+    const series = buildDailySales([
+      { items: 1, createdAt: '2026-02-01T12:00:00.000Z', total: '5.00' },
+      { items: 1, createdAt: '2026-02-04T12:00:00.000Z', total: '8.00' },
+    ]);
+
+    expect(series.map((point) => point.date)).toEqual([
+      '2026-02-01',
+      '2026-02-02',
+      '2026-02-03',
+      '2026-02-04',
+    ]);
+    expect(series.map((point) => point.orders)).toEqual([1, 0, 0, 1]);
+    expect(series.map((point) => point.revenue)).toEqual([5, 0, 0, 8]);
   });
 });

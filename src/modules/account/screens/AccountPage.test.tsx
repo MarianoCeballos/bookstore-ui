@@ -10,8 +10,8 @@ import '@/i18n';
 const mockUser: User = {
   ID: 1,
   username: 'admin',
-  email: 'nanoceballostorres@gmail.com',
-  name: 'Mariano',
+  email: 'admin@example.com',
+  name: 'Test',
   surname: 'Admin',
   profilePic: 'data:image/png;base64,iVBORw0KGgo=',
   role: 'admin',
@@ -29,7 +29,7 @@ const mockChangePassword = jest.fn().mockResolvedValue(undefined);
 const mockUserReviews = jest.fn().mockResolvedValue({
   ID: 1,
   username: 'admin',
-  name: 'Mariano',
+  name: 'Test',
   surname: 'Admin',
   profilePic: 'data:image/png;base64,iVBORw0KGgo=',
   reviews: [],

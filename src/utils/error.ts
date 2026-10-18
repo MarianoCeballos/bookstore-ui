@@ -47,30 +47,25 @@ function extractResponseMessage(data: unknown): string | null {
   return null;
 }
 
+/** Translation key for a recognized server/client message, or `null` when unknown. */
+export function getErrorMessageKey(error: unknown): string | null {
+  if (axios.isAxiosError(error)) {
+    const serverMessage = extractResponseMessage(error.response?.data);
+    if (serverMessage) {
+      return SERVER_MESSAGE_TO_KEY[serverMessage.toLowerCase()] ?? null;
+    }
+  }
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return SERVER_MESSAGE_TO_KEY[error.message.trim().toLowerCase()] ?? null;
+  }
+  return null;
+}
+
 export function getLocalizedErrorMessage(
   error: unknown,
   t: TFunction,
   fallbackKey = 'errorGeneric',
 ): string {
-  if (axios.isAxiosError(error)) {
-    const serverMessage = extractResponseMessage(error.response?.data);
-    if (serverMessage) {
-      const normalized = serverMessage.toLowerCase();
-      const mappedKey = SERVER_MESSAGE_TO_KEY[normalized];
-      if (mappedKey) {
-        return t(mappedKey);
-      }
-      if ((error.response?.status ?? 500) < 500) {
-        return serverMessage;
-      }
-    }
-  }
-  if (error instanceof Error && error.message.trim().length > 0) {
-    const normalized = error.message.trim().toLowerCase();
-    const mappedKey = SERVER_MESSAGE_TO_KEY[normalized];
-    if (mappedKey) {
-      return t(mappedKey);
-    }
-  }
-  return t(fallbackKey);
+  const mappedKey = getErrorMessageKey(error);
+  return mappedKey ? t(mappedKey) : t(fallbackKey);
 }

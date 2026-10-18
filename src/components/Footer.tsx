@@ -8,8 +8,6 @@ export const Footer = () => {
     <Box
       component="footer"
       sx={{
-        position: 'sticky',
-        bottom: 0,
         zIndex: (theme) => theme.zIndex.appBar - 1,
         py: 2,
         bgcolor: '#4a2f22',

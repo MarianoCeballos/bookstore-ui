@@ -7,7 +7,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -23,23 +23,35 @@ export default function ConfirmPage() {
     outcome: 'success' | 'error';
   } | null>(null);
 
+  // Keep the latest translator without making the confirmation request depend
+  // on it: `t` changes identity on every language switch.
+  const latestT = useRef(t);
   useEffect(() => {
-    if (!token) return;
+    latestT.current = t;
+  }, [t]);
+
+  // Confirm each token exactly once, even if the effect re-runs (language
+  // switch, React StrictMode) — the server burns the token on first use.
+  const confirmedTokenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!token || confirmedTokenRef.current === token) return;
+    confirmedTokenRef.current = token;
     authService
       .confirm(token)
       .then(() => {
         setResolved({ token, outcome: 'success' });
-        toast.success(t('emailConfirmation'), {
-          description: t('confirmSuccess'),
+        toast.success(latestT.current('emailConfirmation'), {
+          description: latestT.current('confirmSuccess'),
         });
       })
       .catch(() => {
         setResolved({ token, outcome: 'error' });
-        toast.error(t('emailConfirmation'), {
-          description: t('confirmError'),
+        toast.error(latestT.current('emailConfirmation'), {
+          description: latestT.current('confirmError'),
         });
       });
-  }, [token, t]);
+  }, [token]);
 
   const status: 'loading' | 'success' | 'error' = !token
     ? 'error'

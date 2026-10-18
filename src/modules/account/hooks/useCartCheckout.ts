@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { buildCheckoutRedirectUrl } from '@/modules/payments/constants';
@@ -17,6 +17,17 @@ export function useCartCheckout() {
   const [recipientError, setRecipientError] = useState('');
   const [error, setError] = useState('');
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  // After a successful checkout the browser navigates away mid-"processing".
+  // Restoring this page from the back-forward cache keeps the React state, so
+  // clear the flag to re-enable the checkout controls.
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) setIsCheckingOut(false);
+    };
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
 
   const toggleGift = (checked: boolean) => {
     setGift(checked);

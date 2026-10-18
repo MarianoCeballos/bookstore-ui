@@ -312,6 +312,8 @@ export function AdminBooksSection() {
 
       <DataTable
         loading={booksQuery.isPending}
+        error={booksQuery.isError}
+        onRetry={() => void booksQuery.refetch()}
         rows={booksQuery.data ?? []}
         getRowKey={(item) => item.ID}
         columns={[

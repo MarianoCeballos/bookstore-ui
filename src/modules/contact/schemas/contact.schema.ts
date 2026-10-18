@@ -8,12 +8,16 @@ export function createContactSchema(t: TFunction) {
       .trim()
       .required(t('validationRequired'))
       .email(t('validationEmail')),
-    title: yup.string().trim().required(t('validationRequired')).max(120),
+    title: yup
+      .string()
+      .trim()
+      .required(t('validationRequired'))
+      .max(120, t('validationTitleMax')),
     message: yup
       .string()
       .trim()
       .required(t('validationRequired'))
       .min(10, t('validationMessageMin'))
-      .max(4000),
+      .max(4000, t('validationMessageMax')),
   });
 }

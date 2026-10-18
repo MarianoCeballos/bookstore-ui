@@ -1,6 +1,8 @@
 import {
+  Button,
   Paper,
   Skeleton,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -47,6 +49,10 @@ interface DataTableProps<T extends Record<string, unknown>> {
   rows: T[];
   getRowKey: (row: T, index: number) => string | number;
   loading?: boolean;
+  /** Render a failure row instead of the empty state. */
+  error?: boolean;
+  /** Retry action offered when `error` is set. */
+  onRetry?: () => void;
   emptyMessage?: string;
   /** `plain` drops the table's own outlined surface so it can sit inside a card. */
   variant?: 'outlined' | 'plain';
@@ -76,6 +82,8 @@ export function DataTable<T extends Record<string, unknown>>({
   rows,
   getRowKey,
   loading = false,
+  error = false,
+  onRetry,
   emptyMessage,
   variant = 'outlined',
   defaultSort,
@@ -179,7 +187,30 @@ export function DataTable<T extends Record<string, unknown>>({
               </TableRow>
             ))}
 
-          {!loading && rows.length === 0 && (
+          {!loading && error && (
+            <TableRow>
+              <TableCell
+                colSpan={columns.length}
+                sx={{ py: 4, textAlign: 'center' }}
+              >
+                <Stack
+                  spacing={1.5}
+                  sx={{ alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Typography variant="body2" color="error">
+                    {t('errorGeneric')}
+                  </Typography>
+                  {onRetry && (
+                    <Button size="small" onClick={onRetry}>
+                      {t('retry')}
+                    </Button>
+                  )}
+                </Stack>
+              </TableCell>
+            </TableRow>
+          )}
+
+          {!loading && !error && rows.length === 0 && (
             <TableRow>
               <TableCell
                 colSpan={columns.length}

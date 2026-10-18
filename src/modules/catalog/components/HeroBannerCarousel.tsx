@@ -37,10 +37,15 @@ const arrowSx: SxProps<Theme> = {
 export function HeroBannerCarousel() {
   const { t } = useTranslation();
   const [bannerIndex, setBannerIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const prefersReducedMotion = useMediaQuery(
     '(prefers-reduced-motion: reduce)',
   );
+
+  // Keep autoplay paused while the pointer hovers *or* focus stays inside, so
+  // leaving with the mouse does not resume while a control still has focus.
+  const isPaused = isHovered || isFocused;
 
   useEffect(() => {
     if (isPaused || prefersReducedMotion) return;
@@ -60,10 +65,10 @@ export function HeroBannerCarousel() {
       role="region"
       aria-roledescription={t('carousel')}
       aria-label={t('heroCarousel')}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={() => setIsPaused(false)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocusCapture={() => setIsFocused(true)}
+      onBlurCapture={() => setIsFocused(false)}
     >
       {banners.map((bannerItem, index) => {
         const isActive = index === bannerIndex;
@@ -129,8 +134,9 @@ export function HeroBannerCarousel() {
                     borderRadius: 999,
                     bgcolor: isSelected ? '#ddb577' : 'rgb(255 250 240 / 60%)',
                     border: '1.5px solid rgb(103 69 51 / 65%)',
-                    transition:
-                      'width 320ms cubic-bezier(0.4, 0, 0.2, 1), background-color 320ms ease',
+                    transition: prefersReducedMotion
+                      ? 'none'
+                      : 'width 320ms cubic-bezier(0.4, 0, 0.2, 1), background-color 320ms ease',
                   }}
                 />
               </IconButton>

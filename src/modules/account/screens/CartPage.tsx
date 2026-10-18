@@ -52,21 +52,20 @@ export default function CartPage() {
   const handleRemove = async (book: Book) => {
     setRemovingId(book.ID);
     try {
-      const removalPromise = remove(book.ID);
-      toast.promise(removalPromise, {
-        loading: t('toastRemovingFromCart'),
-        success: t('toastRemovedFromCart'),
+      await remove(book.ID);
+      toast.success(t('toastRemovedFromCart'), {
         description: book.title,
         action: {
           label: t('undo'),
-          onClick: () => void add(book.ID),
+          onClick: () => {
+            add(book.ID).catch((err: unknown) =>
+              toast.error(getLocalizedErrorMessage(err, t)),
+            );
+          },
         },
-        error: (err: unknown) =>
-          getLocalizedErrorMessage(err, t, 'toastRemoveFromCartError'),
       });
-      await removalPromise;
-    } catch {
-      // Handled by toast.promise
+    } catch (err) {
+      toast.error(getLocalizedErrorMessage(err, t, 'toastRemoveFromCartError'));
     } finally {
       setRemovingId(null);
     }
