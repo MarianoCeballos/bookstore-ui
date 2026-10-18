@@ -37,4 +37,33 @@ describe('admin stats utilities', () => {
       { date: '2026-02-02', revenue: 10, orders: 1 },
     ]);
   });
+
+  it('returns empty aggregates for empty snapshots', () => {
+    expect(sumRevenue([])).toBe(0);
+    expect(sumUnitsSold([])).toBe(0);
+    expect(buildDailySales([])).toEqual([]);
+  });
+
+  it('counts malformed payment totals as orders without adding nonfinite revenue', () => {
+    const payments = ['invalid', 'Infinity', '-Infinity', '0', '-2.50'].map(
+      (total) => ({ total, items: 1, createdAt: '2026-02-01T12:00:00' }),
+    );
+    expect(sumRevenue(payments)).toBe(-2.5);
+    expect(buildDailySales(payments)).toEqual([
+      { date: '2026-02-01', revenue: -2.5, orders: 5 },
+    ]);
+  });
+
+  it('ignores invalid dates entirely and preserves input ordering', () => {
+    const payments = [
+      { total: '10', items: 1, createdAt: '2026-02-02T12:00:00' },
+      { total: '99', items: 1, createdAt: 'not-a-date' },
+      { total: '5', items: 1, createdAt: '2026-01-31T12:00:00' },
+    ];
+    expect(buildDailySales(payments)).toEqual([
+      { date: '2026-01-31', revenue: 5, orders: 1 },
+      { date: '2026-02-02', revenue: 10, orders: 1 },
+    ]);
+    expect(payments.map((payment) => payment.total)).toEqual(['10', '99', '5']);
+  });
 });

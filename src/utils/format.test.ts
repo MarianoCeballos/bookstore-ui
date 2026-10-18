@@ -34,4 +34,56 @@ describe('format utilities', () => {
     expect(getUserInitials({ username: 'reader' })).toBe('RE');
     expect(getUserInitials(null)).toBe('?');
   });
+
+  it('uses Spanish locale grouping and decimal separators for regional locales', () => {
+    expect(formatCurrency('1234.5', 'es-AR')).toContain('1.234,50');
+    expect(formatNumber(1234.567, 'es-MX')).toBe('1.234,57');
+    expect(formatNumber(1234.567, 'en-GB')).toBe('1,234.57');
+  });
+
+  it.each([undefined, null, NaN, Infinity, -Infinity, 'invalid'])(
+    'formats nonfinite and missing amounts %p as zero',
+    (value) => {
+      expect(formatCurrency(value)).toBe('$0.00');
+      expect(formatNumber(value)).toBe('0');
+    },
+  );
+
+  it('formats negative amounts without losing the sign', () => {
+    expect(formatCurrency(-12.5)).toBe('-$12.50');
+    expect(formatNumber('-1234.5')).toBe('-1,234.5');
+  });
+
+  it('supports explicit date options and Date objects without local timezone assumptions', () => {
+    const date = new Date('2026-01-01T23:30:00Z');
+    expect(
+      formatDate(date, 'en', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'UTC',
+      }),
+    ).toBe('01/01/2026');
+    expect(
+      formatDate(date, 'es-AR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'UTC',
+      }),
+    ).toBe('01/01/2026');
+  });
+
+  it('trims names before deriving initials and falls back for whitespace-only identities', () => {
+    expect(
+      getUserInitials({ name: ' Jane ', surname: ' Doe ', username: 'other' }),
+    ).toBe('JD');
+    expect(getUserInitials({ name: ' ', surname: ' ', username: ' a ' })).toBe(
+      'A',
+    );
+    expect(getUserInitials({ name: ' ', surname: '', username: ' ' })).toBe(
+      '?',
+    );
+    expect(getUserInitials()).toBe('?');
+  });
 });

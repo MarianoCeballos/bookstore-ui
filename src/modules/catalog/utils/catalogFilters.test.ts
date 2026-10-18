@@ -9,6 +9,7 @@ import {
   matchesCatalogFilters,
   parseCatalogFilters,
   parseCatalogPagination,
+  sortCatalogBooks,
 } from '@/modules/catalog/utils/catalogFilters';
 
 const makeBook = (
@@ -325,5 +326,184 @@ describe('buildCatalogFacets', () => {
     expect(
       buildCatalogFacets(books, createEmptyCatalogFilters()).priceBounds,
     ).toEqual({ min: 5, max: 30 });
+  });
+
+  it('counts each book once even when it repeats a facet with different casing', () => {
+    const facets = buildCatalogFacets(
+      [
+        makeBook({
+          ID: 1,
+          title: 'A',
+          categories: [' Fiction ', 'fiction', ''],
+        }),
+        makeBook({ ID: 2, title: 'B', categories: ['FICTION'] }),
+      ],
+      createEmptyCatalogFilters(),
+    );
+    expect(facets.categories).toEqual([{ value: 'Fiction', count: 2 }]);
+  });
+
+  it('ignores a facet own selection when counting alternatives, while retaining other filters', () => {
+    const facets = buildCatalogFacets(
+      books,
+      withFilters({ categories: ['Classics'], languages: ['English'] }),
+    );
+    expect(facets.categories).toEqual([
+      { value: 'Classics', count: 1 },
+      { value: 'Sci-Fi', count: 2 },
+    ]);
+    expect(facets.languages).toEqual([
+      { value: 'English', count: 1 },
+      { value: 'Spanish', count: 1 },
+    ]);
+  });
+
+  it('has safe bounds for an empty catalog and excludes invalid prices', () => {
+    expect(
+      buildCatalogFacets([], createEmptyCatalogFilters()).priceBounds,
+    ).toEqual({ min: 0, max: 0 });
+    expect(
+      buildCatalogFacets(
+        [
+          makeBook({ ID: 1, title: 'Invalid', price: 'invalid' }),
+          makeBook({ ID: 2, title: 'Valid', price: '10.25' }),
+        ],
+        createEmptyCatalogFilters(),
+      ).priceBounds,
+    ).toEqual({ min: 10, max: 11 });
+  });
+
+  it('provides a usable price range when every book has the same integer price', () => {
+    expect(
+      buildCatalogFacets(
+        [makeBook({ ID: 1, title: 'Free', price: '0' })],
+        createEmptyCatalogFilters(),
+      ).priceBounds,
+    ).toEqual({ min: 0, max: 1 });
+  });
+});
+
+describe('catalog boundary cases', () => {
+  it.each(['', 'page=0', 'page=-1', 'page=NaN', 'page=Infinity', 'page=0.9'])(
+    'defaults invalid pagination %p to the first page',
+    (query) => {
+      expect(parseCatalogPagination(new URLSearchParams(query))).toEqual({
+        page: 1,
+        pageSize: 12,
+      });
+    },
+  );
+
+  it('floors fractional pages and accepts each supported page size', () => {
+    for (const pageSize of [8, 12, 24, 48]) {
+      expect(
+        parseCatalogPagination(
+          new URLSearchParams(`page=2.9&pageSize=${pageSize}`),
+        ),
+      ).toEqual({ page: 2, pageSize });
+    }
+  });
+
+  it.each(['0', '-1', '12.5', 'NaN', 'Infinity', ''])(
+    'rejects unsupported page size %p',
+    (pageSize) => {
+      expect(
+        parseCatalogPagination(new URLSearchParams({ pageSize })).pageSize,
+      ).toBe(12);
+    },
+  );
+
+  it('does not share mutable selection arrays between empty filter states', () => {
+    const first = createEmptyCatalogFilters();
+    const second = createEmptyCatalogFilters();
+    first.categories.push('Fiction');
+    expect(second.categories).toEqual([]);
+  });
+
+  it('retains zero-price filters and ignores empty or nonfinite numeric input', () => {
+    const filters = parseCatalogFilters(
+      new URLSearchParams(
+        'minPrice=0&maxPrice=0&minRating=Infinity&search=%20Dune%20',
+      ),
+    );
+    expect(filters).toMatchObject({
+      minPrice: 0,
+      maxPrice: 0,
+      minRating: null,
+      search: 'Dune',
+    });
+    const params = buildCatalogSearchParams(filters);
+    expect(params.get('minPrice')).toBe('0');
+    expect(params.get('maxPrice')).toBe('0');
+    expect(
+      parseCatalogFilters(
+        new URLSearchParams('minPrice=&maxPrice=Infinity&minRating=0'),
+      ),
+    ).toMatchObject({ minPrice: null, maxPrice: null, minRating: null });
+  });
+
+  it('round-trips multiword facets containing URL metacharacters', () => {
+    const filters = withFilters({
+      search: 'C++ & books',
+      authors: ['Jane Doe', 'A+B'],
+      publishers: ['Press & Co.'],
+      languages: ['Spanish'],
+    });
+    expect(
+      parseCatalogFilters(
+        new URLSearchParams(buildCatalogSearchParams(filters).toString()),
+      ),
+    ).toEqual(filters);
+  });
+
+  it('counts individual facet choices and treats both price bounds as one active filter', () => {
+    expect(
+      countActiveCatalogFilters(
+        withFilters({
+          categories: ['Fiction', 'Classics'],
+          authors: ['Jane'],
+          minPrice: 0,
+          maxPrice: 20,
+          minRating: 1,
+          search: 'Book',
+          sort: 'popular',
+        }),
+      ),
+    ).toBe(5);
+  });
+
+  it('keeps equal sort keys stable without mutating the caller array', () => {
+    const input = [
+      makeBook({ ID: 1, title: 'First', price: '20' }),
+      makeBook({ ID: 2, title: 'Second', price: '10' }),
+      makeBook({ ID: 3, title: 'Third', price: '10' }),
+    ];
+    expect(
+      sortCatalogBooks(input, withFilters({ sort: 'price-asc' })).map(
+        (book) => book.ID,
+      ),
+    ).toEqual([2, 3, 1]);
+    expect(input.map((book) => book.ID)).toEqual([1, 2, 3]);
+  });
+
+  it('accepts inclusive price and rating boundaries and matches normalized facet values', () => {
+    expect(
+      matchesCatalogFilters(
+        books[0],
+        withFilters({
+          categories: [' sci-fi '],
+          authors: ['FRANK HERBERT'],
+          minPrice: 10,
+          maxPrice: 10,
+          minRating: 4.5,
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      matchesCatalogFilters(books[0], withFilters({ minPrice: 10.01 })),
+    ).toBe(false);
+    expect(
+      matchesCatalogFilters(books[0], withFilters({ minRating: 4.51 })),
+    ).toBe(false);
   });
 });

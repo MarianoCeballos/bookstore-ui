@@ -190,4 +190,105 @@ describe('CatalogBrowser', () => {
       screen.queryByRole('checkbox', { name: /Classics/ }),
     ).not.toBeInTheDocument();
   });
+
+  describe('pagination regressions', () => {
+    beforeEach(() => {
+      mockBooks.push(
+        ...Array.from({ length: 20 }, (_, index) => ({
+          ...mockBooks[0],
+          ID: index + 5,
+          title: `Additional book ${index + 1}`,
+          categories: ['Additional'],
+        })),
+      );
+    });
+
+    afterEach(() => {
+      mockBooks.splice(4);
+    });
+
+    it('renders exactly two pages for 24 books at the default size', async () => {
+      const user = userEvent.setup();
+      renderAt('/books');
+      expect(visibleTitles()).toEqual(
+        mockBooks.slice(0, 12).map((book) => book.title),
+      );
+      expect(
+        screen.queryByRole('button', { name: 'Go to page 3' }),
+      ).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Go to next page' }));
+      expect(visibleTitles()).toEqual(
+        mockBooks.slice(12).map((book) => book.title),
+      );
+      expect(
+        screen.getByRole('button', { name: 'Go to next page' }),
+      ).toBeDisabled();
+      expect(screen.getByText(/13.*24.*24/)).toBeInTheDocument();
+      expect(window.scrollTo).toHaveBeenCalledWith({
+        top: 0,
+        behavior: 'smooth',
+      });
+    });
+
+    it('shows the remaining single book on a partial final page', () => {
+      mockBooks.push({ ...mockBooks[0], ID: 25, title: 'Final book' });
+      renderAt('/books?page=3');
+      expect(visibleTitles()).toEqual(['Final book']);
+      expect(screen.getByText(/25.*25.*25/)).toBeInTheDocument();
+      expect(
+        screen.queryByText('No books matched your search.'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('clamps an outdated page URL to the last populated page', () => {
+      renderAt('/books?page=999');
+      expect(visibleTitles()).toEqual(
+        mockBooks.slice(12).map((book) => book.title),
+      );
+      expect(screen.getByRole('button', { name: 'page 2' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+    });
+
+    it('calculates page count from filtered results', () => {
+      renderAt('/books?category=Sci-Fi&page=9');
+      expect(visibleTitles()).toEqual(['Dune', 'Foundation']);
+      expect(
+        screen.getByRole('button', { name: 'Go to next page' }),
+      ).toBeDisabled();
+      expect(
+        screen.queryByRole('button', { name: 'Go to page 2' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('resets to the first page and expands the visible range when page size changes', async () => {
+      const user = userEvent.setup();
+      renderAt('/books?page=2');
+      await user.click(screen.getByRole('combobox', { name: 'Per page' }));
+      await user.click(screen.getByRole('option', { name: '24' }));
+      expect(visibleTitles()).toEqual(mockBooks.map((book) => book.title));
+      expect(screen.getByRole('button', { name: 'page 1' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+      expect(
+        screen.getByRole('button', { name: 'Go to next page' }),
+      ).toBeDisabled();
+    });
+
+    it('returns to page one when clearing a search on a later page', async () => {
+      const user = userEvent.setup();
+      renderAt('/books?search=Additional&page=2');
+      expect(visibleTitles()).toHaveLength(8);
+      await user.click(screen.getByRole('button', { name: 'Clear' }));
+      expect(visibleTitles()).toEqual(
+        mockBooks.slice(0, 12).map((book) => book.title),
+      );
+      expect(
+        screen.queryByText('Results for “Additional”'),
+      ).not.toBeInTheDocument();
+    });
+  });
 });
