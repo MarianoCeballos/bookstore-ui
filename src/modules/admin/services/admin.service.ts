@@ -5,27 +5,29 @@ import type {
   Review,
   User,
 } from '@/interfaces/models';
-import http from '@/services/http';
+import axiosInstance from '@/services/axios';
 
 export const adminService = {
   async stats(): Promise<AdminStats> {
-    const { data } = await http.get<AdminStats>('/stats');
+    const { data } = await axiosInstance.get<AdminStats>('/stats');
     return data;
   },
   async orders(): Promise<Order[]> {
-    const { data } = await http.get<Order[]>('/payments');
+    const { data } = await axiosInstance.get<Order[]>('/payments');
     return data;
   },
   async users(username?: string): Promise<User[]> {
-    const { data } = await http.get<User[]>('/users', { params: { username } });
+    const { data } = await axiosInstance.get<User[]>('/users', {
+      params: { username },
+    });
     return data;
   },
   async books(): Promise<Book[]> {
-    const { data } = await http.get<Book[]>('/books');
+    const { data } = await axiosInstance.get<Book[]>('/books');
     return data;
   },
   async reviews(): Promise<Review[]> {
-    const { data } = await http.get<Review[]>('/reviews');
+    const { data } = await axiosInstance.get<Review[]>('/reviews');
     return data;
   },
 };

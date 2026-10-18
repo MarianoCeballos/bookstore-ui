@@ -48,3 +48,5 @@ Keep the preview origin aligned with the API's `FRONTEND_URL` CORS setting.
 Domain folders under `src/modules` contain axios services, React Query hooks, and screens. Shared UI components live in `src/components`; routes, providers, interfaces, translations, and utilities have dedicated folders. The API owns user accounts and sessions.
 
 Book reviews are included in the book response and selected client-side for the detail view; the UI does not depend on a separate reviews-by-book endpoint.
+
+See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) and [docs/AUDIT_AND_REFACTORING.md](./docs/AUDIT_AND_REFACTORING.md) for detailed module boundaries, UI/UX design decisions, localization, accessibility (WCAG 2.2 AA), and refactoring history.

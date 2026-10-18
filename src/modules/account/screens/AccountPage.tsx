@@ -1,77 +1,66 @@
-import { useState } from 'react';
-import {
-  Alert,
-  Button,
-  Container,
-  Paper,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
-import { Link } from 'react-router-dom';
-import { useAuth } from '@/modules/auth/context/AuthContext';
-import { toast } from 'sonner';
+import { Box, Container, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { AccountProfileHeader } from '@/modules/account/components/AccountProfileHeader';
+import { AccountQuickStats } from '@/modules/account/components/AccountQuickStats';
+import { AccountReviewsSection } from '@/modules/account/components/AccountReviewsSection';
+import { ProfileDetailsForm } from '@/modules/account/components/ProfileDetailsForm';
+import { SecurityPasswordForm } from '@/modules/account/components/SecurityPasswordForm';
+import { useCart } from '@/modules/account/context/CartContext';
+import { useFavorites } from '@/modules/account/context/FavoritesContext';
+import { useUserReviews } from '@/modules/account/hooks/useUserReviews';
+import { useAuthenticatedUser } from '@/modules/auth/context/AuthenticatedUserContext';
+import { useOrders } from '@/modules/catalog/hooks/useCatalogQueries';
 
 export default function AccountPage() {
-  const { user, updateProfile } = useAuth();
   const { t } = useTranslation();
-  const [name, setName] = useState(user?.name ?? '');
-  const [surname, setSurname] = useState(user?.surname ?? '');
-  const [email, setEmail] = useState(user?.email ?? '');
-  const [error, setError] = useState('');
+  const user = useAuthenticatedUser();
+  const { items: favorites } = useFavorites();
+  const { items: cart } = useCart();
+  const orders = useOrders();
+  const userReviews = useUserReviews(user.ID);
 
-  if (!user) return null;
-  const save = async () => {
-    setError('');
-    try {
-      await updateProfile({ name, surname, email });
-      toast.success('Your profile has been updated.');
-    } catch {
-      setError('Your profile could not be updated.');
-    }
-  };
+  const reviews = userReviews.data?.reviews ?? [];
 
   return (
-    <Container maxWidth="md">
-      <Typography variant="h3" sx={{ mb: 3 }}>
-        {t('accountTitle')}
-      </Typography>
-      <Paper variant="outlined" sx={{ p: { xs: 3, sm: 4 } }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          {t('profileDetails')}
+    <Container maxWidth="lg">
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h3" sx={{ mb: 0.75 }}>
+          {t('accountTitle')}
         </Typography>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        <Stack spacing={2}>
-          <TextField label="Username" value={user.username} disabled />
-          <TextField
-            label={t('firstName')}
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-          />
-          <TextField
-            label={t('lastName')}
-            value={surname}
-            onChange={(event) => setSurname(event.target.value)}
-          />
-          <TextField
-            label={t('email')}
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-          <Button variant="contained" onClick={save}>
-            {t('saveChanges')}
-          </Button>
-          <Button component={Link} to="/history" variant="outlined">
-            {t('viewHistory')}
-          </Button>
-        </Stack>
-      </Paper>
+        <Typography variant="body1" color="text.secondary">
+          {t('accountSubtitle')}
+        </Typography>
+      </Box>
+
+      <Stack spacing={3}>
+        <AccountProfileHeader user={user} />
+
+        <AccountQuickStats
+          savedBooks={favorites.length}
+          cartBooks={cart.length}
+          completedOrders={orders.data?.length ?? 0}
+          publishedReviews={reviews.length}
+        />
+
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '7fr 5fr' },
+            gap: 3,
+            alignItems: 'start',
+          }}
+        >
+          <ProfileDetailsForm user={user} />
+          <SecurityPasswordForm />
+        </Box>
+
+        <AccountReviewsSection
+          reviews={reviews}
+          isPending={userReviews.isPending}
+          isError={userReviews.isError}
+          onRetry={() => void userReviews.refetch()}
+        />
+      </Stack>
     </Container>
   );
 }

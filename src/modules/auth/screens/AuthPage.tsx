@@ -1,39 +1,22 @@
-import { useState } from 'react';
 import {
   Alert,
   Button,
   Container,
   Link as MuiLink,
   Paper,
-  Stack,
-  TextField,
   Typography,
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
-import type { paths } from '@/interfaces/generated/api';
+import { ROUTES } from '@/constants';
+import { LoginForm } from '@/modules/auth/components/LoginForm';
+import { RegisterForm } from '@/modules/auth/components/RegisterForm';
 import { useAuth } from '@/modules/auth/context/AuthContext';
-
-type LoginInput =
-  paths['/login']['post']['requestBody']['content']['application/json'];
-type RegisterInput =
-  paths['/users']['post']['requestBody']['content']['application/json'];
-
-const loginSchema = yup.object({
-  username: yup.string().required('Enter your username or email'),
-  password: yup.string().required('Enter your password'),
-});
-const registerSchema = yup.object({
-  username: yup.string().required().min(3).max(40),
-  email: yup.string().required().email(),
-  name: yup.string().required().max(100),
-  surname: yup.string().required().max(100),
-  password: yup.string().required().min(12).max(128),
-});
+import { authService } from '@/modules/auth/services/auth.service';
+import type { LoginInput, RegisterInput } from '@/modules/auth/types';
+import { getErrorMessageKey, getLocalizedErrorMessage } from '@/utils/error';
 
 export default function AuthPage({ register = false }: { register?: boolean }) {
   const { t } = useTranslation();
@@ -41,159 +24,128 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState('');
-  const loginForm = useForm<LoginInput>({
-    resolver: yupResolver(loginSchema),
-    defaultValues: { username: '', password: '' },
-  });
-  const registerForm = useForm<RegisterInput>({
-    resolver: yupResolver(registerSchema),
-    defaultValues: {
-      username: '',
-      email: '',
-      name: '',
-      surname: '',
-      password: '',
-      profilePic: '',
-    },
-  });
+  const [unconfirmedUsername, setUnconfirmedUsername] = useState('');
+  const [isResending, setIsResending] = useState(false);
+  const [prevRegister, setPrevRegister] = useState(register);
+
+  if (prevRegister !== register) {
+    setPrevRegister(register);
+    setError('');
+    setUnconfirmedUsername('');
+  }
 
   const finishLogin = () => {
     const destination =
       (location.state as { from?: { pathname?: string } } | null)?.from
-        ?.pathname ?? '/';
+        ?.pathname ?? ROUTES.HOME;
     navigate(destination, { replace: true });
   };
 
-  const submitLogin = loginForm.handleSubmit(async (input) => {
+  const submitLogin = async (input: LoginInput) => {
     setError('');
+    setUnconfirmedUsername('');
     try {
       await login(input);
+      toast.success(t('toastWelcomeBack'), {
+        description: `@${input.username}`,
+      });
       finishLogin();
-    } catch {
-      setError('Sign in failed. Check your details and try again.');
+    } catch (err) {
+      const msg = getLocalizedErrorMessage(err, t, 'errorInvalidCredentials');
+      setError(msg);
+      // Decide from the error itself (mapped server message) rather than from
+      // the localized text, which changes with the active language.
+      if (getErrorMessageKey(err) === 'errorConfirmEmailFirst') {
+        setUnconfirmedUsername(input.username);
+        toast.warning(msg, {
+          description: `@${input.username}`,
+        });
+      } else {
+        toast.error(msg);
+      }
     }
-  });
+  };
 
-  const submitRegister = registerForm.handleSubmit(async (input) => {
+  const submitRegister = async (input: RegisterInput) => {
     setError('');
     try {
       await createAccount(input);
-      toast.success('Check your email to confirm your account.');
-      navigate('/login');
-    } catch {
-      setError(
-        'We could not create the account. Check your details and try again.',
-      );
+      toast.success(t('toastAccountCreated'), {
+        description: t('toastAccountCreatedDescription', {
+          email: input.email,
+        }),
+      });
+      navigate(ROUTES.LOGIN);
+    } catch (err) {
+      const msg = getLocalizedErrorMessage(err, t);
+      setError(msg);
+      toast.error(msg);
     }
-  });
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!unconfirmedUsername) return;
+    setIsResending(true);
+    try {
+      await authService.resend(unconfirmedUsername);
+      toast.success(t('toastConfirmationSentTitle'), {
+        description: t('confirmationSent'),
+      });
+      setUnconfirmedUsername('');
+    } catch (err) {
+      toast.error(getLocalizedErrorMessage(err, t));
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   return (
     <Container maxWidth="sm">
-      <Paper variant="outlined" sx={{ p: { xs: 3, sm: 5 } }}>
+      <Paper variant="outlined" sx={{ p: { xs: 3, sm: 5 }, borderRadius: 2 }}>
         <Typography variant="h4" sx={{ mb: 1 }}>
           {register ? t('registerTitle') : t('signInTitle')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           {register ? t('registerDescription') : t('signInDescription')}
         </Typography>
+
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert
+            severity="error"
+            sx={{ mb: 2 }}
+            action={
+              unconfirmedUsername ? (
+                <Button
+                  color="inherit"
+                  size="small"
+                  disabled={isResending}
+                  onClick={() => void handleResendConfirmation()}
+                >
+                  {isResending
+                    ? t('resendingConfirmation')
+                    : t('resendConfirmation')}
+                </Button>
+              ) : undefined
+            }
+          >
             {error}
           </Alert>
         )}
+
         {register ? (
-          <Stack
-            component="form"
-            onSubmit={submitRegister}
-            className="form-stack"
-          >
-            <TextField
-              label={t('username')}
-              {...registerForm.register('username')}
-              error={Boolean(registerForm.formState.errors.username)}
-              helperText={registerForm.formState.errors.username?.message}
-            />
-            <TextField
-              label={t('email')}
-              type="email"
-              {...registerForm.register('email')}
-              error={Boolean(registerForm.formState.errors.email)}
-              helperText={registerForm.formState.errors.email?.message}
-            />
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <TextField
-                fullWidth
-                label={t('firstName')}
-                {...registerForm.register('name')}
-                error={Boolean(registerForm.formState.errors.name)}
-                helperText={registerForm.formState.errors.name?.message}
-              />
-              <TextField
-                fullWidth
-                label={t('lastName')}
-                {...registerForm.register('surname')}
-                error={Boolean(registerForm.formState.errors.surname)}
-                helperText={registerForm.formState.errors.surname?.message}
-              />
-            </Stack>
-            <TextField
-              label={t('password')}
-              type="password"
-              {...registerForm.register('password')}
-              error={Boolean(registerForm.formState.errors.password)}
-              helperText={
-                registerForm.formState.errors.password?.message ??
-                'Use at least 12 characters.'
-              }
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={registerForm.formState.isSubmitting}
-            >
-              {t('createAccount')}
-            </Button>
-          </Stack>
+          <RegisterForm onSubmit={submitRegister} />
         ) : (
-          <Stack component="form" onSubmit={submitLogin} className="form-stack">
-            <TextField
-              label={t('usernameOrEmail')}
-              autoComplete="username"
-              {...loginForm.register('username')}
-              error={Boolean(loginForm.formState.errors.username)}
-              helperText={loginForm.formState.errors.username?.message}
-            />
-            <TextField
-              label={t('password')}
-              type="password"
-              autoComplete="current-password"
-              {...loginForm.register('password')}
-              error={Boolean(loginForm.formState.errors.password)}
-              helperText={loginForm.formState.errors.password?.message}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={loginForm.formState.isSubmitting}
-            >
-              {t('signIn')}
-            </Button>
-            <MuiLink
-              component={Link}
-              to="/password-reset"
-              underline="hover"
-              sx={{ textAlign: 'right' }}
-            >
-              {t('forgotPassword')}
-            </MuiLink>
-          </Stack>
+          <LoginForm onSubmit={submitLogin} />
         )}
+
         <Typography sx={{ mt: 3, textAlign: 'center' }}>
           {register ? `${t('alreadyAccount')} ` : `${t('newToBookstore')} `}
-          <MuiLink component={Link} to={register ? '/login' : '/register'}>
-            {register ? 'Sign in' : 'Create an account'}
+          <MuiLink
+            component={Link}
+            to={register ? ROUTES.LOGIN : ROUTES.REGISTER}
+            sx={{ fontWeight: 700 }}
+          >
+            {register ? t('signIn') : t('createAccount')}
           </MuiLink>
         </Typography>
       </Paper>

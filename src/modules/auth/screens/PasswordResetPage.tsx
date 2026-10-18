@@ -1,74 +1,55 @@
-import { useState } from 'react';
 import {
   Alert,
+  Box,
   Button,
   Container,
+  Divider,
   Paper,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material';
-import { toast } from 'sonner';
-import { authService } from '@/modules/auth/services/auth.service';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { ROUTES } from '@/constants';
+import { PasswordResetPasswordStep } from '@/modules/auth/components/PasswordResetPasswordStep';
+import { PasswordResetRequestStep } from '@/modules/auth/components/PasswordResetRequestStep';
+import { PasswordResetVerifyStep } from '@/modules/auth/components/PasswordResetVerifyStep';
+import { usePasswordReset } from '@/modules/auth/hooks/usePasswordReset';
 
 export default function PasswordResetPage() {
   const { t } = useTranslation();
-  const [user, setUser] = useState('');
-  const [ID, setID] = useState('');
-  const [resetCode, setResetCode] = useState('');
-  const [resetToken, setResetToken] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [notice, setNotice] = useState('');
-  const [error, setError] = useState('');
-
-  const requestCode = async () => {
-    setError('');
-    try {
-      const result = await authService.requestReset(user);
-      setNotice(result.message);
-    } catch {
-      setError('The reset request could not be sent.');
-    }
-  };
-
-  const verifyCode = async () => {
-    setError('');
-    try {
-      const result = await authService.confirmReset(Number(ID), resetCode);
-      setResetToken(result.data.resetToken);
-      setNotice('Code verified. Choose a new password.');
-    } catch {
-      setError('The account ID or reset code is invalid or expired.');
-    }
-  };
-
-  const savePassword = async () => {
-    setError('');
-    if (password.length < 12 || password !== confirmPassword) {
-      setError('Passwords must match and contain at least 12 characters.');
-      return;
-    }
-    try {
-      await authService.resetPassword(resetToken, password, confirmPassword);
-      toast.success('Your password has been reset.');
-      setNotice('You can now sign in with your new password.');
-      setResetToken('');
-    } catch {
-      setError('Your password could not be changed. Request a new reset code.');
-    }
-  };
+  const {
+    user,
+    setUser,
+    accountId,
+    setAccountId,
+    resetCode,
+    setResetCode,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    resetToken,
+    notice,
+    error,
+    isSendingCode,
+    isVerifyingCode,
+    isSavingPassword,
+    requestCode,
+    verifyCode,
+    savePassword,
+  } = usePasswordReset();
 
   return (
     <Container maxWidth="sm">
-      <Paper variant="outlined" sx={{ p: { xs: 3, sm: 5 } }}>
+      <Paper variant="outlined" sx={{ p: { xs: 3, sm: 5 }, borderRadius: 2 }}>
         <Typography variant="h4" sx={{ mb: 1 }}>
           {t('resetPassword')}
         </Typography>
         <Typography color="text.secondary" sx={{ mb: 3 }}>
           {t('resetInstructions')}
         </Typography>
+
         {notice && (
           <Alert severity="info" sx={{ mb: 2 }}>
             {notice}
@@ -79,55 +60,55 @@ export default function PasswordResetPage() {
             {error}
           </Alert>
         )}
-        <Stack spacing={2}>
-          <TextField
-            label={t('usernameOrEmail')}
-            value={user}
-            onChange={(event) => setUser(event.target.value)}
-          />
-          <Button
-            variant="outlined"
-            onClick={requestCode}
-            disabled={!user.trim()}
-          >
-            {t('sendReset')}
-          </Button>
-          <TextField
-            label={t('accountId')}
-            value={ID}
-            onChange={(event) => setID(event.target.value)}
-          />
-          <TextField
-            label={t('emailCode')}
-            value={resetCode}
-            onChange={(event) => setResetCode(event.target.value)}
-          />
-          <Button
-            variant="outlined"
-            onClick={verifyCode}
-            disabled={!ID || !resetCode}
-          >
-            {t('verifyCode')}
-          </Button>
+
+        <Stack spacing={3}>
+          <Box>
+            <PasswordResetRequestStep
+              user={user}
+              isSending={isSendingCode}
+              onUserChange={setUser}
+              onRequest={() => void requestCode()}
+            />
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <PasswordResetVerifyStep
+              accountId={accountId}
+              resetCode={resetCode}
+              isVerifying={isVerifyingCode}
+              onAccountIdChange={setAccountId}
+              onResetCodeChange={setResetCode}
+              onVerify={() => void verifyCode()}
+            />
+          </Box>
+
           {resetToken && (
             <>
-              <TextField
-                label={t('newPassword')}
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-              <TextField
-                label={t('confirmPassword')}
-                type="password"
-                value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-              />
-              <Button variant="contained" onClick={savePassword}>
-                {t('savePassword')}
-              </Button>
+              <Divider />
+              <Box>
+                <PasswordResetPasswordStep
+                  password={password}
+                  confirmPassword={confirmPassword}
+                  isSaving={isSavingPassword}
+                  onPasswordChange={setPassword}
+                  onConfirmPasswordChange={setConfirmPassword}
+                  onSave={() => void savePassword()}
+                />
+              </Box>
             </>
           )}
+
+          <Divider />
+          <Button
+            component={Link}
+            to={ROUTES.LOGIN}
+            color="inherit"
+            size="small"
+          >
+            {t('continueSignIn')}
+          </Button>
         </Stack>
       </Paper>
     </Container>

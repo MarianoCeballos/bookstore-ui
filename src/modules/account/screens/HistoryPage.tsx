@@ -1,54 +1,152 @@
-import { Alert, Container, Paper, Stack, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { useOrders } from '@/modules/catalog/hooks/useCatalogQueries';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import {
+  Alert,
+  Button,
+  Chip,
+  Container,
+  Divider,
+  Paper,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { PageLoader } from '@/components/PageLoader';
+import { PageStateCard } from '@/components/PageStateCard';
+import { ROUTES } from '@/constants';
+import { useOrders } from '@/modules/catalog/hooks/useCatalogQueries';
+import { useUi } from '@/modules/ui/context/UiContext';
+import { formatCurrency, formatDate } from '@/utils/format';
+import { getOrderStatusLabel } from '@/utils/orderStatus';
 
 export default function HistoryPage() {
   const { t } = useTranslation();
+  const { language } = useUi();
   const orders = useOrders();
+
   return (
     <Container maxWidth="lg">
       <Typography variant="h3" sx={{ mb: 3 }}>
         {t('purchaseHistory')}
       </Typography>
+
       {orders.isError && (
-        <Alert severity="error">Purchase history could not be loaded.</Alert>
-      )}
-      {!orders.isPending && !orders.data?.length && (
-        <Alert severity="info">
-          {t('emptyHistory')} <Link to="/books">{t('browse')}</Link>.
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => void orders.refetch()}
+            >
+              {t('retry')}
+            </Button>
+          }
+        >
+          {t('errorGeneric')}
         </Alert>
       )}
-      <Stack spacing={2}>
-        {orders.data?.map((order) => (
-          <Paper variant="outlined" sx={{ p: 3 }} key={order.ID}>
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              sx={{ justifyContent: 'space-between' }}
+
+      {orders.isPending && (
+        <PageLoader label={t('loadingHistory')} minHeight={280} />
+      )}
+
+      {!orders.isPending && !orders.isError && !orders.data?.length && (
+        <PageStateCard
+          title={t('purchaseHistory')}
+          description={t('emptyHistory')}
+          icon={<ReceiptLongOutlinedIcon fontSize="medium" />}
+          actionLabel={t('browse')}
+          actionTo={ROUTES.BOOKS}
+        />
+      )}
+
+      {!orders.isPending && Boolean(orders.data?.length) && (
+        <Stack spacing={2}>
+          {orders.data?.map((order) => (
+            <Paper
+              variant="outlined"
+              sx={{ p: { xs: 2.5, sm: 3 }, borderRadius: 2 }}
+              key={order.ID}
             >
-              <Typography variant="h6">
-                {t('order')} #{order.ID}
-              </Typography>
-              <Typography>
-                {new Date(order.createdAt).toLocaleString()}
-              </Typography>
-            </Stack>
-            <Typography color="text.secondary">
-              {t('status')}: {order.status}
-            </Typography>
-            <Stack spacing={0.5} sx={{ my: 2 }}>
-              {order.items.map((item, index) => (
-                <Typography key={`${order.ID}-${item.ID}-${index}`}>
-                  {item.title} · ${Number(item.price).toFixed(2)}
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={1}
+                sx={{
+                  justifyContent: 'space-between',
+                  alignItems: { xs: 'flex-start', sm: 'center' },
+                }}
+              >
+                <Stack
+                  direction="row"
+                  spacing={1.5}
+                  sx={{ alignItems: 'center' }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                    {t('order')} #{order.ID}
+                  </Typography>
+                  <Chip
+                    label={getOrderStatusLabel(order.status, t)}
+                    size="small"
+                    color={
+                      order.status.toLowerCase().includes('approved') ||
+                      order.status.toLowerCase().includes('completed')
+                        ? 'success'
+                        : 'default'
+                    }
+                    variant="outlined"
+                  />
+                </Stack>
+                <Typography variant="body2" color="text.secondary">
+                  {formatDate(order.createdAt, language, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </Typography>
-              ))}
-            </Stack>
-            <Typography sx={{ fontWeight: 700 }}>
-              {t('total')}: ${Number(order.total).toFixed(2)}
-            </Typography>
-          </Paper>
-        ))}
-      </Stack>
+              </Stack>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Stack spacing={1} sx={{ mb: 2 }}>
+                {order.items.map((item, index) => (
+                  <Stack
+                    key={`${order.ID}-${item.ID}-${index}`}
+                    direction="row"
+                    sx={{
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Typography
+                      component={Link}
+                      to={ROUTES.BOOK_DETAIL(item.ID)}
+                      color="inherit"
+                      sx={{
+                        textDecoration: 'none',
+                        fontWeight: 600,
+                        '&:hover': { textDecoration: 'underline' },
+                      }}
+                    >
+                      {item.title}
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {formatCurrency(item.price, language)}
+                    </Typography>
+                  </Stack>
+                ))}
+              </Stack>
+
+              <Typography sx={{ fontWeight: 800, textAlign: 'right' }}>
+                {t('total')}: {formatCurrency(order.total, language)}
+              </Typography>
+            </Paper>
+          ))}
+        </Stack>
+      )}
     </Container>
   );
 }

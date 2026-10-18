@@ -1,6 +1,8 @@
 import type { components } from '@/interfaces/generated/api';
 
 export type User = components['schemas']['UserAdminViewDto'];
+export type UserPublic = components['schemas']['UserPublicViewDto'];
+export type UserReviews = components['schemas']['UserReviewsResponseDto'];
 export type Session = components['schemas']['AuthResponseDto'];
 export type Author = components['schemas']['AuthorResponseDto'];
 export type Category = components['schemas']['CategoryResponseDto'];
