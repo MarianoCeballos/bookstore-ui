@@ -11,7 +11,6 @@ import {
   Divider,
   FormControlLabel,
   Paper,
-  Skeleton,
   Stack,
   TextField,
   Typography,
@@ -21,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { BookCover } from '@/components/BookCover';
+import { PageLoader } from '@/components/PageLoader';
 import { PageStateCard } from '@/components/PageStateCard';
 import { ROUTES } from '@/constants';
 import type { Book } from '@/interfaces/models';
@@ -74,15 +74,11 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <Container maxWidth="lg" aria-busy="true">
+      <Container maxWidth="lg">
         <Typography variant="h3" sx={{ mb: 3 }}>
           {t('cartTitle')}
         </Typography>
-        <Stack spacing={2}>
-          <Skeleton variant="rounded" height={116} />
-          <Skeleton variant="rounded" height={116} />
-          <Skeleton variant="rounded" height={140} />
-        </Stack>
+        <PageLoader label={t('loadingCart')} minHeight={320} />
       </Container>
     );
   }

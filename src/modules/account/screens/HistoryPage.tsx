@@ -6,12 +6,12 @@ import {
   Container,
   Divider,
   Paper,
-  Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { PageLoader } from '@/components/PageLoader';
 import { PageStateCard } from '@/components/PageStateCard';
 import { ROUTES } from '@/constants';
 import { useOrders } from '@/modules/catalog/hooks/useCatalogQueries';
@@ -42,16 +42,11 @@ export default function HistoryPage() {
               {t('retry')}
             </Button>
           }
-        >
-          {t('errorGeneric')}
-        </Alert>
+        ></Alert>
       )}
 
       {orders.isPending && (
-        <Stack spacing={2} aria-busy="true">
-          <Skeleton variant="rounded" height={140} />
-          <Skeleton variant="rounded" height={140} />
-        </Stack>
+        <PageLoader label={t('loadingHistory')} minHeight={280} />
       )}
 
       {!orders.isPending && !orders.isError && !orders.data?.length && (

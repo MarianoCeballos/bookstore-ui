@@ -12,6 +12,7 @@ import {
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import BookGrid from '@/components/BookGrid';
+import PageLoader from '@/components/PageLoader';
 import { CatalogActiveFilterChips } from '@/modules/catalog/components/CatalogActiveFilterChips';
 import { CatalogFilterDrawer } from '@/modules/catalog/components/CatalogFilterDrawer';
 import { CatalogFilterPanel } from '@/modules/catalog/components/CatalogFilterPanel';
@@ -67,7 +68,13 @@ export default function CatalogBrowser() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-
+  if (booksQuery.isLoading) {
+    return (
+      <Container maxWidth="xl">
+        <PageLoader label={t('loadingBooks')} minHeight="50vh" />
+      </Container>
+    );
+  }
   const filterPanel = (
     <CatalogFilterPanel
       facets={facets}

@@ -18,11 +18,12 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import bookLogo from '@/assets/Book_Logo.png';
+import PageLoader from '@/components/PageLoader';
 import SearchBox from '@/components/SearchBox';
 import { Toaster } from '@/components/Toaster';
 import { UserAccountMenu } from '@/components/UserAccountMenu';
@@ -274,7 +275,11 @@ export default function AppShell() {
         </Container>
       </AppBar>
       <Box component="main" sx={{ flex: 1, py: { xs: 2, md: 3 } }}>
-        <Outlet />
+        {/* Route chunks are lazy-loaded, so keep the header and footer in place
+            and only swap the page content while a screen's code arrives. */}
+        <Suspense fallback={<PageLoader minHeight="60vh" />}>
+          <Outlet />
+        </Suspense>
       </Box>
       <Footer />
       <Toaster />

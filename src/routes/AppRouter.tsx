@@ -1,7 +1,7 @@
-import { CircularProgress, Stack } from '@mui/material';
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import AppShell from '@/components/AppShell';
+import PageLoader from '@/components/PageLoader';
 import RequireAuth from '@/components/RequireAuth';
 
 const CatalogPage = lazy(() => import('@/modules/catalog/screens/CatalogPage'));
@@ -69,13 +69,7 @@ const router = createBrowserRouter([
 
 export default function AppRouter() {
   return (
-    <Suspense
-      fallback={
-        <Stack role="status" sx={{ py: 12, alignItems: 'center' }}>
-          <CircularProgress />
-        </Stack>
-      }
-    >
+    <Suspense fallback={<PageLoader minHeight="60vh" />}>
       <RouterProvider router={router} />
     </Suspense>
   );

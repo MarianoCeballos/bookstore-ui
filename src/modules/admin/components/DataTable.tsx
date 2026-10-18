@@ -12,6 +12,7 @@ import {
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TableLoader } from '@/components/TableLoader';
 
 export type DataTableSortDirection = 'asc' | 'desc';
 
@@ -113,6 +114,7 @@ export function DataTable<T extends Record<string, unknown>>({
       variant="outlined"
       elevation={0}
       sx={{
+        position: 'relative',
         overflowX: 'auto',
         borderRadius: 2,
         ...(variant === 'plain' ? { border: 'none' } : {}),
@@ -151,7 +153,7 @@ export function DataTable<T extends Record<string, unknown>>({
         <TableBody>
           {loading &&
             Array.from({ length: 5 }, (_, rowIndex) => (
-              <TableRow key={`skeleton-${rowIndex}`}>
+              <TableRow key={`skeleton-${rowIndex}`} sx={{ opacity: 0.55 }}>
                 {columns.map((column) => (
                   <TableCell key={column.id} align={column.align}>
                     <Skeleton variant="text" height={28} />
@@ -191,6 +193,7 @@ export function DataTable<T extends Record<string, unknown>>({
           )}
         </TableBody>
       </Table>
+      {loading && <TableLoader />}
     </Paper>
   );
 }

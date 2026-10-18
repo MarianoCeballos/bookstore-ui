@@ -7,7 +7,7 @@ The application is a strict TypeScript SPA built with Vite 8, React 19, and Mate
 - `src/constants/` — Shared route paths (`ROUTES`), localStorage keys (`STORAGE_KEYS`), pagination sizes, and UI timing constants.
 - `src/utils/` — Pure formatting helpers (`formatCurrency`, `formatDate`, `getUserInitials`) and localized API error mapping (`getLocalizedErrorMessage`).
 - `src/i18n/` — Bilingual translation dictionaries (`en.json`, `es.json`) with `localStorage` persistence (`bookstore.language`) and `<html lang>` synchronization.
-- `src/components/` — Reusable UI primitives (`AppShell`, `UserAccountMenu`, `SearchBox`, `BookCard`, `BookGrid`, `BookCover`, `ConfirmDialog`, `PageStateCard`, `RequireAuth`).
+- `src/components/` — Reusable UI primitives (`AppShell`, `UserAccountMenu`, `SearchBox`, `BookCard`, `BookGrid`, `BookCover`, `ConfirmDialog`, `PageStateCard`, `LoadingSpinner`, `PageLoader`, `TableLoader`, `RequireAuth`).
 - `src/interfaces/` — Domain aliases (`models.ts`) backed by generated OpenAPI contract types (`generated/api.ts`).
 - `src/modules/<domain>/` — Feature modules (`catalog`, `auth`, `account`, `admin`, `payments`, `contact`, `lookups`, `ui`) organized into `components/`, `hooks/`, `screens/`, and `services/`.
 

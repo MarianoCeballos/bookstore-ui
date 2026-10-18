@@ -5,12 +5,12 @@ import {
   Button,
   Container,
   Paper,
-  Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { PageLoader } from '@/components/PageLoader';
 import { AdminQuickLinks } from '@/modules/admin/components/AdminQuickLinks';
 import { AdminRecentOrders } from '@/modules/admin/components/AdminRecentOrders';
 import { adminService } from '@/modules/admin/services/admin.service';
@@ -78,19 +78,7 @@ export default function AdminDashboardPage() {
         </Alert>
       )}
 
-      {stats.isPending && (
-        <Box
-          aria-busy="true"
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
-            gap: 2,
-          }}
-        >
-          <Skeleton variant="rounded" height={320} />
-          <Skeleton variant="rounded" height={320} />
-        </Box>
-      )}
+      {stats.isPending && <PageLoader minHeight={320} />}
 
       <Stack spacing={3}>
         <AdminQuickLinks />
