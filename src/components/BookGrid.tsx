@@ -8,10 +8,12 @@ export default function BookGrid({
   books,
   loading = false,
   horizontal = false,
+  emptyAction,
 }: {
   books?: Book[];
   loading?: boolean;
   horizontal?: boolean;
+  emptyAction?: { label: string; onClick: () => void };
 }) {
   const { t } = useTranslation();
   const gridClass = `book-grid${horizontal ? ' book-grid--horizontal' : ''}`;
@@ -35,6 +37,8 @@ export default function BookGrid({
       <PageStateCard
         title={t('noBooks')}
         description={t('noBooksDescription')}
+        actionLabel={emptyAction?.label}
+        onAction={emptyAction?.onClick}
       />
     );
   }

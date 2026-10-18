@@ -1,4 +1,4 @@
-import { Button, Chip, Stack } from '@mui/material';
+import { Avatar, Button, Chip, Stack } from '@mui/material';
 import {
   keepPreviousData,
   useQuery,
@@ -49,7 +49,7 @@ export function AdminUsersSection() {
     placeholderData: keepPreviousData,
   });
 
-  const visibleUsers =
+  const visibleUsers: User[] =
     usersQuery.data?.filter((item) => item.ID !== currentUser.ID) ?? [];
 
   const invalidateUsers = async () => {
@@ -139,7 +139,7 @@ export function AdminUsersSection() {
         placeholder={t('filterUsername')}
       />
 
-      <DataTable
+      <DataTable<User>
         loading={usersQuery.isPending}
         rows={visibleUsers}
         getRowKey={(item) => item.ID}
@@ -148,6 +148,17 @@ export function AdminUsersSection() {
             id: 'id',
             label: t('idColumn'),
             sortValue: (item) => item.ID,
+          },
+          {
+            id: 'profilePic',
+            label: '',
+            render: (item) => (
+              <Avatar
+                src={item.profilePic}
+                alt={item.username}
+                sx={{ width: 32, height: 32 }}
+              />
+            ),
           },
           {
             id: 'username',

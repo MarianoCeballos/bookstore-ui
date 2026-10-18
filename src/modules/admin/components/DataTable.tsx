@@ -15,9 +15,24 @@ import { useTranslation } from 'react-i18next';
 
 export type DataTableSortDirection = 'asc' | 'desc';
 
-export interface DataTableColumn<T> {
+/**
+ * Identifier for a column, also used as its React key.
+ *
+ * The row's own string keys are offered for autocompletion, but synthetic
+ * columns that have no backing field (for example an `actions` column, or a
+ * column rendering `items.length`) may use any identifier.
+ *
+ * `Record<never, never>` keeps the row keys in the union while still allowing
+ * arbitrary strings; unlike `string & {}` it does not trip
+ * `@typescript-eslint/no-empty-object-type`.
+ */
+export type DataTableColumnId<T extends Record<string, unknown>> =
+  | Extract<keyof T, string>
+  | (string & Record<never, never>);
+
+export interface DataTableColumn<T extends Record<string, unknown>> {
   /** Stable identifier, also used as the React key for the column. */
-  id: string;
+  id: DataTableColumnId<T>;
   label: string;
   align?: 'left' | 'center' | 'right';
   /** Provide a value to make the column sortable. */
@@ -26,7 +41,7 @@ export interface DataTableColumn<T> {
   render?: (row: T) => ReactNode;
 }
 
-interface DataTableProps<T> {
+interface DataTableProps<T extends Record<string, unknown>> {
   columns: DataTableColumn<T>[];
   rows: T[];
   getRowKey: (row: T, index: number) => string | number;
@@ -35,7 +50,10 @@ interface DataTableProps<T> {
   /** `plain` drops the table's own outlined surface so it can sit inside a card. */
   variant?: 'outlined' | 'plain';
   /** Column to sort by before the user interacts with the headers. */
-  defaultSort?: { columnId: string; direction: DataTableSortDirection };
+  defaultSort?: {
+    columnId: DataTableColumnId<T>;
+    direction: DataTableSortDirection;
+  };
 }
 
 function compareValues(
@@ -52,7 +70,7 @@ function compareValues(
   });
 }
 
-export function DataTable<T>({
+export function DataTable<T extends Record<string, unknown>>({
   columns,
   rows,
   getRowKey,
@@ -63,7 +81,7 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const { t } = useTranslation();
   const [sort, setSort] = useState<{
-    columnId: string;
+    columnId: DataTableColumnId<T>;
     direction: DataTableSortDirection;
   } | null>(defaultSort ?? null);
 
@@ -79,7 +97,7 @@ export function DataTable<T>({
     );
   }, [rows, sort, activeSortValue]);
 
-  const handleSort = (columnId: string) => {
+  const handleSort = (columnId: DataTableColumnId<T>) => {
     setSort((current) =>
       current?.columnId === columnId
         ? {

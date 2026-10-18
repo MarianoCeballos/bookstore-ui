@@ -32,7 +32,7 @@ export function CatalogPaginationBar({
 }: CatalogPaginationBarProps) {
   const { t } = useTranslation();
 
-  if (totalBooks === 0) {
+  if (totalBooks <= 1) {
     return null;
   }
 
