@@ -16,26 +16,12 @@ import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import type { Book, BookInput } from '@/interfaces/models';
 import { DataTable } from '@/modules/admin/components/DataTable';
+import { INITIAL_BOOK, PRICE_PATTERN } from '@/modules/admin/constants';
 import { adminService } from '@/modules/admin/services/admin.service';
 import { booksService } from '@/modules/catalog/services/books.service';
 import { useUi } from '@/modules/ui/context/UiContext';
 import { getLocalizedErrorMessage } from '@/utils/error';
 import { formatCurrency } from '@/utils/format';
-
-const initialBook: BookInput = {
-  title: '',
-  description: '',
-  price: '0.00',
-  image: '',
-  authors: [],
-  categories: [],
-  publisher: '',
-  publishedDate: new Date().toISOString().slice(0, 10),
-  pageCount: 1,
-  language: 'English',
-};
-
-const PRICE_PATTERN = /^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/;
 
 export function AdminBooksSection() {
   const { t } = useTranslation();
@@ -43,7 +29,7 @@ export function AdminBooksSection() {
   const queryClient = useQueryClient();
 
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [book, setBook] = useState<BookInput>(initialBook);
+  const [book, setBook] = useState<BookInput>(INITIAL_BOOK);
   const [authorText, setAuthorText] = useState('');
   const [categoryText, setCategoryText] = useState('');
   const [error, setError] = useState('');
@@ -59,7 +45,7 @@ export function AdminBooksSection() {
 
   const resetForm = () => {
     setEditingId(null);
-    setBook(initialBook);
+    setBook(INITIAL_BOOK);
     setAuthorText('');
     setCategoryText('');
     setError('');
@@ -326,38 +312,61 @@ export function AdminBooksSection() {
 
       <DataTable
         loading={booksQuery.isPending}
-        headers={[
-          t('idColumn'),
-          t('bookTitleLabel'),
-          t('price'),
-          t('soldCopies'),
-          t('actions'),
+        rows={booksQuery.data ?? []}
+        getRowKey={(item) => item.ID}
+        columns={[
+          {
+            id: 'id',
+            label: t('idColumn'),
+            sortValue: (item) => item.ID,
+          },
+          {
+            id: 'title',
+            label: t('bookTitleLabel'),
+            sortValue: (item) => item.title,
+          },
+          {
+            id: 'price',
+            label: t('price'),
+            align: 'right',
+            sortValue: (item) => Number(item.price),
+            render: (item) => formatCurrency(item.price, language),
+          },
+          {
+            id: 'soldCopies',
+            label: t('soldCopies'),
+            align: 'right',
+            sortValue: (item) => item.soldCopies,
+          },
+          {
+            id: 'actions',
+            label: t('actions'),
+            align: 'right',
+            render: (item) => (
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ justifyContent: 'flex-end' }}
+              >
+                <Button
+                  size="small"
+                  startIcon={<EditOutlinedIcon fontSize="small" />}
+                  onClick={() => handleStartEdit(item)}
+                >
+                  {t('edit')}
+                </Button>
+                <Button
+                  size="small"
+                  color="error"
+                  startIcon={<DeleteOutlineRoundedIcon fontSize="small" />}
+                  onClick={() => setBookToDelete(item)}
+                >
+                  {t('remove')}
+                </Button>
+              </Stack>
+            ),
+          },
         ]}
-        rows={
-          booksQuery.data?.map((item) => [
-            item.ID,
-            item.title,
-            formatCurrency(item.price, language),
-            item.soldCopies,
-            <Stack direction="row" spacing={1} key={item.ID}>
-              <Button
-                size="small"
-                startIcon={<EditOutlinedIcon fontSize="small" />}
-                onClick={() => handleStartEdit(item)}
-              >
-                {t('edit')}
-              </Button>
-              <Button
-                size="small"
-                color="error"
-                startIcon={<DeleteOutlineRoundedIcon fontSize="small" />}
-                onClick={() => setBookToDelete(item)}
-              >
-                {t('remove')}
-              </Button>
-            </Stack>,
-          ]) ?? []
-        }
       />
 
       <ConfirmDialog

@@ -18,33 +18,50 @@ export function AdminOrdersSection() {
   return (
     <DataTable
       loading={ordersQuery.isPending}
-      headers={[
-        t('idColumn'),
-        t('publishedDate'),
-        t('status'),
-        t('purchases'),
-        t('total'),
+      rows={ordersQuery.data ?? []}
+      getRowKey={(item) => item.ID}
+      columns={[
+        {
+          id: 'id',
+          label: t('idColumn'),
+          sortValue: (item) => item.ID,
+          render: (item) => `#${item.ID}`,
+        },
+        {
+          id: 'publishedDate',
+          label: t('publishedDate'),
+          sortValue: (item) => new Date(item.createdAt).getTime(),
+          render: (item) =>
+            formatDate(item.createdAt, language, {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+        },
+        {
+          id: 'status',
+          label: t('status'),
+          sortValue: (item) => item.status,
+          render: (item) => (
+            <Chip size="small" label={item.status} variant="outlined" />
+          ),
+        },
+        {
+          id: 'purchases',
+          label: t('purchases'),
+          align: 'right',
+          sortValue: (item) => item.items.length,
+        },
+        {
+          id: 'total',
+          label: t('total'),
+          align: 'right',
+          sortValue: (item) => Number(item.total),
+          render: (item) => formatCurrency(item.total, language),
+        },
       ]}
-      rows={
-        ordersQuery.data?.map((item) => [
-          `#${item.ID}`,
-          formatDate(item.createdAt, language, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
-          <Chip
-            key="status"
-            size="small"
-            label={item.status}
-            variant="outlined"
-          />,
-          item.items.length,
-          formatCurrency(item.total, language),
-        ]) ?? []
-      }
     />
   );
 }

@@ -11,13 +11,8 @@ import {
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import * as yup from 'yup';
-
-export interface ReviewFormValues {
-  title: string;
-  review: string;
-  rating: number;
-}
+import { createReviewSchema } from '@/modules/catalog/schemas/review.schema';
+import type { ReviewFormValues } from '@/modules/catalog/types';
 
 interface BookReviewFormProps {
   initialValues?: ReviewFormValues;
@@ -35,19 +30,7 @@ export function BookReviewForm({
   const { t } = useTranslation();
   const [rating, setRating] = useState<number>(initialValues?.rating ?? 5);
 
-  const schema = useMemo(
-    () =>
-      yup.object({
-        title: yup.string().trim().required(t('validationRequired')).max(20),
-        review: yup.string().trim().required(t('validationRequired')).max(255),
-        rating: yup
-          .number()
-          .required(t('validationRatingRange'))
-          .min(1, t('validationRatingRange'))
-          .max(5, t('validationRatingRange')),
-      }),
-    [t],
-  );
+  const schema = useMemo(() => createReviewSchema(t), [t]);
 
   const form = useForm<ReviewFormValues>({
     resolver: yupResolver(schema),

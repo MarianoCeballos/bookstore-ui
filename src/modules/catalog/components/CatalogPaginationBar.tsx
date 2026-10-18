@@ -7,8 +7,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-
-const PAGE_SIZE_OPTIONS = [8, 12, 24, 48] as const;
+import { PAGE_SIZE_OPTIONS } from '@/modules/catalog/constants';
 
 interface CatalogPaginationBarProps {
   currentPage: number;

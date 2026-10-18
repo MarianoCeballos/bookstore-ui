@@ -92,19 +92,10 @@ export default function AdminDashboardPage() {
         </Box>
       )}
 
-      {stats.data && (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', lg: '2fr 1fr' },
-            gap: 2,
-            alignItems: 'start',
-          }}
-        >
-          <AdminRecentOrders payments={stats.data.payments} />
-          <AdminQuickLinks />
-        </Box>
-      )}
+      <Stack spacing={3}>
+        <AdminQuickLinks />
+        {stats.data && <AdminRecentOrders payments={stats.data.payments} />}
+      </Stack>
     </Container>
   );
 }

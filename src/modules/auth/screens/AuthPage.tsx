@@ -1,31 +1,22 @@
-import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
   Button,
-  CircularProgress,
   Container,
   Link as MuiLink,
   Paper,
-  Stack,
-  TextField,
   Typography,
 } from '@mui/material';
-import { useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import * as yup from 'yup';
 import { ROUTES } from '@/constants';
-import type { paths } from '@/interfaces/generated/api';
+import { LoginForm } from '@/modules/auth/components/LoginForm';
+import { RegisterForm } from '@/modules/auth/components/RegisterForm';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { authService } from '@/modules/auth/services/auth.service';
+import type { LoginInput, RegisterInput } from '@/modules/auth/types';
 import { getLocalizedErrorMessage } from '@/utils/error';
-
-type LoginInput =
-  paths['/login']['post']['requestBody']['content']['application/json'];
-type RegisterInput =
-  paths['/users']['post']['requestBody']['content']['application/json'];
 
 export default function AuthPage({ register = false }: { register?: boolean }) {
   const { t } = useTranslation();
@@ -43,57 +34,6 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
     setUnconfirmedUsername('');
   }
 
-  const loginSchema = useMemo(
-    () =>
-      yup.object({
-        username: yup.string().trim().required(t('validationRequired')),
-        password: yup.string().required(t('validationRequired')),
-      }),
-    [t],
-  );
-
-  const registerSchema = useMemo(
-    () =>
-      yup.object({
-        username: yup
-          .string()
-          .trim()
-          .required(t('validationRequired'))
-          .min(3, t('validationUsernameMin'))
-          .max(40),
-        email: yup
-          .string()
-          .trim()
-          .required(t('validationRequired'))
-          .email(t('validationEmail')),
-        name: yup.string().trim().required(t('validationRequired')).max(100),
-        surname: yup.string().trim().required(t('validationRequired')).max(100),
-        password: yup
-          .string()
-          .required(t('validationRequired'))
-          .min(12, t('validationPasswordMin'))
-          .max(128),
-      }),
-    [t],
-  );
-
-  const loginForm = useForm<LoginInput>({
-    resolver: yupResolver(loginSchema),
-    defaultValues: { username: '', password: '' },
-  });
-
-  const registerForm = useForm<RegisterInput>({
-    resolver: yupResolver(registerSchema),
-    defaultValues: {
-      username: '',
-      email: '',
-      name: '',
-      surname: '',
-      password: '',
-      profilePic: '',
-    },
-  });
-
   const finishLogin = () => {
     const destination =
       (location.state as { from?: { pathname?: string } } | null)?.from
@@ -101,47 +41,36 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
     navigate(destination, { replace: true });
   };
 
-  const submitLogin = loginForm.handleSubmit(async (input) => {
+  const submitLogin = async (input: LoginInput) => {
     setError('');
     setUnconfirmedUsername('');
-    const trimmedUsername = input.username.trim();
     try {
-      await login({
-        username: trimmedUsername,
-        password: input.password,
-      });
+      await login(input);
       toast.success(t('toastWelcomeBack'), {
-        description: `@${trimmedUsername}`,
+        description: `@${input.username}`,
       });
       finishLogin();
     } catch (err) {
       const msg = getLocalizedErrorMessage(err, t, 'errorInvalidCredentials');
       setError(msg);
       if (msg === t('errorConfirmEmailFirst')) {
-        setUnconfirmedUsername(trimmedUsername);
+        setUnconfirmedUsername(input.username);
         toast.warning(msg, {
-          description: `@${trimmedUsername}`,
+          description: `@${input.username}`,
         });
       } else {
         toast.error(msg);
       }
     }
-  });
+  };
 
-  const submitRegister = registerForm.handleSubmit(async (input) => {
+  const submitRegister = async (input: RegisterInput) => {
     setError('');
-    const trimmedEmail = input.email.trim();
     try {
-      await createAccount({
-        ...input,
-        username: input.username.trim(),
-        email: trimmedEmail,
-        name: input.name.trim(),
-        surname: input.surname.trim(),
-      });
+      await createAccount(input);
       toast.success(t('toastAccountCreated'), {
         description: t('toastAccountCreatedDescription', {
-          email: trimmedEmail,
+          email: input.email,
         }),
       });
       navigate(ROUTES.LOGIN);
@@ -150,7 +79,7 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
       setError(msg);
       toast.error(msg);
     }
-  });
+  };
 
   const handleResendConfirmation = async () => {
     if (!unconfirmedUsername) return;
@@ -202,123 +131,9 @@ export default function AuthPage({ register = false }: { register?: boolean }) {
         )}
 
         {register ? (
-          <Stack
-            component="form"
-            onSubmit={(event) => void submitRegister(event)}
-            className="form-stack"
-            noValidate
-          >
-            <TextField
-              label={t('username')}
-              autoComplete="username"
-              {...registerForm.register('username')}
-              error={Boolean(registerForm.formState.errors.username)}
-              helperText={registerForm.formState.errors.username?.message}
-              disabled={registerForm.formState.isSubmitting}
-            />
-            <TextField
-              label={t('email')}
-              type="email"
-              autoComplete="email"
-              {...registerForm.register('email')}
-              error={Boolean(registerForm.formState.errors.email)}
-              helperText={registerForm.formState.errors.email?.message}
-              disabled={registerForm.formState.isSubmitting}
-            />
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <TextField
-                fullWidth
-                label={t('firstName')}
-                autoComplete="given-name"
-                {...registerForm.register('name')}
-                error={Boolean(registerForm.formState.errors.name)}
-                helperText={registerForm.formState.errors.name?.message}
-                disabled={registerForm.formState.isSubmitting}
-              />
-              <TextField
-                fullWidth
-                label={t('lastName')}
-                autoComplete="family-name"
-                {...registerForm.register('surname')}
-                error={Boolean(registerForm.formState.errors.surname)}
-                helperText={registerForm.formState.errors.surname?.message}
-                disabled={registerForm.formState.isSubmitting}
-              />
-            </Stack>
-            <TextField
-              label={t('password')}
-              type="password"
-              autoComplete="new-password"
-              {...registerForm.register('password')}
-              error={Boolean(registerForm.formState.errors.password)}
-              helperText={
-                registerForm.formState.errors.password?.message ??
-                t('validationPasswordMin')
-              }
-              disabled={registerForm.formState.isSubmitting}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={registerForm.formState.isSubmitting}
-              startIcon={
-                registerForm.formState.isSubmitting ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : undefined
-              }
-            >
-              {registerForm.formState.isSubmitting
-                ? t('creatingAccount')
-                : t('createAccount')}
-            </Button>
-          </Stack>
+          <RegisterForm onSubmit={submitRegister} />
         ) : (
-          <Stack
-            component="form"
-            onSubmit={(event) => void submitLogin(event)}
-            className="form-stack"
-            noValidate
-          >
-            <TextField
-              label={t('usernameOrEmail')}
-              autoComplete="username"
-              {...loginForm.register('username')}
-              error={Boolean(loginForm.formState.errors.username)}
-              helperText={loginForm.formState.errors.username?.message}
-              disabled={loginForm.formState.isSubmitting}
-            />
-            <TextField
-              label={t('password')}
-              type="password"
-              autoComplete="current-password"
-              {...loginForm.register('password')}
-              error={Boolean(loginForm.formState.errors.password)}
-              helperText={loginForm.formState.errors.password?.message}
-              disabled={loginForm.formState.isSubmitting}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              disabled={loginForm.formState.isSubmitting}
-              startIcon={
-                loginForm.formState.isSubmitting ? (
-                  <CircularProgress size={18} color="inherit" />
-                ) : undefined
-              }
-            >
-              {loginForm.formState.isSubmitting ? t('signingIn') : t('signIn')}
-            </Button>
-            <MuiLink
-              component={Link}
-              to={ROUTES.PASSWORD_RESET}
-              underline="hover"
-              sx={{ textAlign: 'right', fontWeight: 600 }}
-            >
-              {t('forgotPassword')}
-            </MuiLink>
-          </Stack>
+          <LoginForm onSubmit={submitLogin} />
         )}
 
         <Typography sx={{ mt: 3, textAlign: 'center' }}>

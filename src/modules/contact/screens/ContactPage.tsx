@@ -13,38 +13,16 @@ import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import * as yup from 'yup';
+import { createContactSchema } from '@/modules/contact/schemas/contact.schema';
 import { contactService } from '@/modules/contact/services/contact.service';
+import type { ContactInput } from '@/modules/contact/types';
 import { getLocalizedErrorMessage } from '@/utils/error';
-
-interface ContactInput {
-  sender: string;
-  title: string;
-  message: string;
-}
 
 export default function ContactPage() {
   const { t } = useTranslation();
   const [error, setError] = useState('');
 
-  const schema = useMemo(
-    () =>
-      yup.object({
-        sender: yup
-          .string()
-          .trim()
-          .required(t('validationRequired'))
-          .email(t('validationEmail')),
-        title: yup.string().trim().required(t('validationRequired')).max(120),
-        message: yup
-          .string()
-          .trim()
-          .required(t('validationRequired'))
-          .min(10, t('validationMessageMin'))
-          .max(4000),
-      }),
-    [t],
-  );
+  const schema = useMemo(() => createContactSchema(t), [t]);
 
   const form = useForm<ContactInput>({
     resolver: yupResolver(schema),

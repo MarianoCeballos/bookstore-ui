@@ -15,13 +15,11 @@ import { useTranslation } from 'react-i18next';
 import { Link, useSearchParams } from 'react-router-dom';
 import BookGrid from '@/components/BookGrid';
 import { DEFAULT_CATALOG_PAGE_SIZE, ROUTES } from '@/constants';
-import type { paths } from '@/interfaces/generated/api';
 import { CatalogPaginationBar } from '@/modules/catalog/components/CatalogPaginationBar';
 import { HeroBannerCarousel } from '@/modules/catalog/components/HeroBannerCarousel';
 import { useBooks, useHomeBooks } from '@/modules/catalog/hooks/useBooks';
+import type { BookSearchParams } from '@/modules/catalog/types';
 import { useAuthors, useCategories } from '@/modules/lookups/hooks/useLookups';
-
-type Search = NonNullable<paths['/books']['get']['parameters']['query']>;
 
 export default function CatalogPage({
   featured = false,
@@ -63,7 +61,7 @@ export default function CatalogPage({
   const { data: authors = [] } = useAuthors(!featured);
   const { data: categories = [] } = useCategories(!featured);
 
-  const filters: Search = useMemo(
+  const filters: BookSearchParams = useMemo(
     () => ({
       ...(search.trim() ? { title: search.trim() } : {}),
       ...(author ? { author } : {}),

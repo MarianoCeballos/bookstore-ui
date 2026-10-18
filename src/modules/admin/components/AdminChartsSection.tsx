@@ -16,18 +16,13 @@ import {
   YAxis,
 } from 'recharts';
 import type { AdminStats } from '@/interfaces/models';
+import {
+  CHART_AXIS_TICK,
+  CHART_TOOLTIP_STYLE,
+} from '@/modules/admin/constants';
 import { buildDailySales } from '@/modules/admin/utils/stats';
 import { useUi } from '@/modules/ui/context/UiContext';
 import { formatCurrency, formatDate } from '@/utils/format';
-
-const AXIS_TICK = { fill: '#4e3325', fontSize: 12 };
-const TOOLTIP_STYLE = {
-  backgroundColor: '#fffaf0',
-  border: '1px solid rgba(103, 69, 51, 0.28)',
-  borderRadius: 8,
-  color: '#1e110b',
-  boxShadow: '0 6px 18px rgba(30, 17, 11, 0.12)',
-};
 
 function truncate(value: string, max = 18): string {
   return value.length > max ? `${value.slice(0, max)}…` : value;
@@ -110,11 +105,11 @@ export function AdminChartsSection({ stats }: { stats: AdminStats }) {
               angle={-25}
               textAnchor="end"
               interval={0}
-              tick={AXIS_TICK}
+              tick={CHART_AXIS_TICK}
             />
-            <YAxis allowDecimals={false} tick={AXIS_TICK} />
+            <YAxis allowDecimals={false} tick={CHART_AXIS_TICK} />
             <Tooltip
-              contentStyle={TOOLTIP_STYLE}
+              contentStyle={CHART_TOOLTIP_STYLE}
               labelStyle={{ color: '#1e110b', fontWeight: 600 }}
               cursor={{ fill: 'rgba(103, 69, 51, 0.08)' }}
             />
@@ -147,11 +142,11 @@ export function AdminChartsSection({ stats }: { stats: AdminStats }) {
               angle={-25}
               textAnchor="end"
               interval={0}
-              tick={AXIS_TICK}
+              tick={CHART_AXIS_TICK}
             />
-            <YAxis allowDecimals={false} tick={AXIS_TICK} />
+            <YAxis allowDecimals={false} tick={CHART_AXIS_TICK} />
             <Tooltip
-              contentStyle={TOOLTIP_STYLE}
+              contentStyle={CHART_TOOLTIP_STYLE}
               labelStyle={{ color: '#1e110b', fontWeight: 600 }}
               cursor={{ fill: 'rgba(103, 69, 51, 0.08)' }}
             />
@@ -194,7 +189,7 @@ export function AdminChartsSection({ stats }: { stats: AdminStats }) {
               />
               <XAxis
                 dataKey="date"
-                tick={AXIS_TICK}
+                tick={CHART_AXIS_TICK}
                 minTickGap={24}
                 tickFormatter={(value) =>
                   formatDate(String(value), language, {
@@ -203,9 +198,9 @@ export function AdminChartsSection({ stats }: { stats: AdminStats }) {
                   })
                 }
               />
-              <YAxis tick={AXIS_TICK} />
+              <YAxis tick={CHART_AXIS_TICK} />
               <Tooltip
-                contentStyle={TOOLTIP_STYLE}
+                contentStyle={CHART_TOOLTIP_STYLE}
                 labelStyle={{ color: '#1e110b', fontWeight: 600 }}
                 formatter={(value) => formatCurrency(Number(value), language)}
                 labelFormatter={(value) =>

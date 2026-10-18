@@ -2,8 +2,25 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { MAX_PROFILE_PIC_BYTES } from '@/constants';
+import type { User } from '@/interfaces/models';
 import AccountPage from '@/modules/account/screens/AccountPage';
+import { AuthenticatedUserProvider } from '@/modules/auth/context/AuthenticatedUserContext';
 import '@/i18n';
+
+const mockUser: User = {
+  ID: 1,
+  username: 'admin',
+  email: 'nanoceballostorres@gmail.com',
+  name: 'Mariano',
+  surname: 'Admin',
+  profilePic: 'data:image/png;base64,iVBORw0KGgo=',
+  role: 'admin',
+  admin: true,
+  enabled: true,
+  banned: false,
+  suspendedTimes: 0,
+  createdAt: '2026-10-17T00:54:21.369Z',
+};
 
 const mockUpdateProfile = jest.fn().mockResolvedValue(undefined);
 const mockUploadProfilePicture = jest.fn().mockResolvedValue(undefined);
@@ -20,20 +37,6 @@ const mockUserReviews = jest.fn().mockResolvedValue({
 
 jest.mock('@/modules/auth/context/AuthContext', () => ({
   useAuth: () => ({
-    user: {
-      ID: 1,
-      username: 'admin',
-      email: 'nanoceballostorres@gmail.com',
-      name: 'Mariano',
-      surname: 'Admin',
-      profilePic: 'data:image/png;base64,iVBORw0KGgo=',
-      role: 'admin',
-      admin: true,
-      enabled: true,
-      banned: false,
-      suspendedTimes: 0,
-      createdAt: '2026-10-17T00:54:21.369Z',
-    },
     updateProfile: mockUpdateProfile,
     uploadProfilePicture: mockUploadProfilePicture,
     removeProfilePicture: mockRemoveProfilePicture,
@@ -86,7 +89,9 @@ describe('AccountPage', () => {
     return render(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
-          <AccountPage />
+          <AuthenticatedUserProvider user={mockUser}>
+            <AccountPage />
+          </AuthenticatedUserProvider>
         </MemoryRouter>
       </QueryClientProvider>,
     );

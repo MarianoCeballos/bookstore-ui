@@ -9,15 +9,10 @@ import {
   type PropsWithChildren,
 } from 'react';
 import { STORAGE_KEYS } from '@/constants';
-import type { paths } from '@/interfaces/generated/api';
 import type { Session, User } from '@/interfaces/models';
 import { accountService } from '@/modules/account/services/account.service';
 import { authService } from '@/modules/auth/services/auth.service';
-
-type LoginInput =
-  paths['/login']['post']['requestBody']['content']['application/json'];
-type RegisterInput =
-  paths['/users']['post']['requestBody']['content']['application/json'];
+import type { LoginInput, RegisterInput } from '@/modules/auth/types';
 
 interface AuthValue {
   user: User | null;

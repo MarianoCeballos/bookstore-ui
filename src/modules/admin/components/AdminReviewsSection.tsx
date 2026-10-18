@@ -48,32 +48,53 @@ export function AdminReviewsSection() {
     <>
       <DataTable
         loading={reviewsQuery.isPending}
-        headers={[
-          t('idColumn'),
-          t('reviewTitle'),
-          t('readerColumn'),
-          t('rating'),
-          t('reports'),
-          t('actions'),
+        rows={reviewsQuery.data ?? []}
+        getRowKey={(item) => item.ID}
+        columns={[
+          {
+            id: 'id',
+            label: t('idColumn'),
+            sortValue: (item) => item.ID,
+          },
+          {
+            id: 'title',
+            label: t('reviewTitle'),
+            sortValue: (item) => item.title,
+          },
+          {
+            id: 'reader',
+            label: t('readerColumn'),
+            sortValue: (item) => item.user.username,
+            render: (item) => `@${item.user.username}`,
+          },
+          {
+            id: 'rating',
+            label: t('rating'),
+            align: 'right',
+            sortValue: (item) => item.rating,
+          },
+          {
+            id: 'reports',
+            label: t('reports'),
+            align: 'right',
+            sortValue: (item) => item.reports.length,
+          },
+          {
+            id: 'actions',
+            label: t('actions'),
+            align: 'right',
+            render: (item) => (
+              <Button
+                size="small"
+                color="error"
+                startIcon={<DeleteOutlineRoundedIcon fontSize="small" />}
+                onClick={() => setReviewIdToDelete(item.ID)}
+              >
+                {t('remove')}
+              </Button>
+            ),
+          },
         ]}
-        rows={
-          reviewsQuery.data?.map((item) => [
-            item.ID,
-            item.title,
-            `@${item.user.username}`,
-            item.rating,
-            item.reports.length,
-            <Button
-              key="remove"
-              size="small"
-              color="error"
-              startIcon={<DeleteOutlineRoundedIcon fontSize="small" />}
-              onClick={() => setReviewIdToDelete(item.ID)}
-            >
-              {t('remove')}
-            </Button>,
-          ]) ?? []
-        }
       />
 
       <ConfirmDialog

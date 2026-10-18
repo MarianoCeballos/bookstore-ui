@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { CircularProgress, Stack } from '@mui/material';
+import { AuthenticatedUserProvider } from '@/modules/auth/context/AuthenticatedUserContext';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 
 export default function RequireAuth({ admin = false }: { admin?: boolean }) {
@@ -14,5 +15,9 @@ export default function RequireAuth({ admin = false }: { admin?: boolean }) {
   }
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   if (admin && !user.admin) return <Navigate to="/" replace />;
-  return <Outlet />;
+  return (
+    <AuthenticatedUserProvider user={user}>
+      <Outlet />
+    </AuthenticatedUserProvider>
+  );
 }

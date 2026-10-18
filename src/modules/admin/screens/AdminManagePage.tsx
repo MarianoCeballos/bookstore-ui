@@ -8,15 +8,13 @@ import { AdminOrdersSection } from '@/modules/admin/components/AdminOrdersSectio
 import { AdminReviewsSection } from '@/modules/admin/components/AdminReviewsSection';
 import { AdminStatsSection } from '@/modules/admin/components/AdminStatsSection';
 import { AdminUsersSection } from '@/modules/admin/components/AdminUsersSection';
-
-const sections = ['stats', 'books', 'users', 'reviews', 'orders'] as const;
-type Section = (typeof sections)[number];
+import { ADMIN_SECTIONS, type AdminSection } from '@/modules/admin/constants';
 
 export default function AdminManagePage() {
   const { t } = useTranslation();
-  const section = useParams().section as Section;
+  const section = useParams().section as AdminSection;
 
-  if (!sections.includes(section)) {
+  if (!ADMIN_SECTIONS.includes(section)) {
     return (
       <Container maxWidth="md">
         <PageStateCard
@@ -29,7 +27,7 @@ export default function AdminManagePage() {
     );
   }
 
-  const sectionLabels: Record<Section, string> = {
+  const sectionLabels: Record<AdminSection, string> = {
     stats: t('statsSectionTitle'),
     books: t('booksSectionTitle'),
     users: t('usersSectionTitle'),
@@ -58,7 +56,7 @@ export default function AdminManagePage() {
         </Stack>
 
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-          {sections.map((item) => (
+          {ADMIN_SECTIONS.map((item) => (
             <Button
               key={item}
               component={Link}

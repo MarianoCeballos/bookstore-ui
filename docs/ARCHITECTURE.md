@@ -1,6 +1,6 @@
 # UI Architecture
 
-The application is a strict TypeScript SPA built with Vite 8, React 19, and Material UI v7. React Router v7 owns navigation. The shared TanStack `QueryClient` and domain hooks own server state; compact contexts hold the current authenticated session (`AuthContext`), cart/favorites relations (`CartContext`, `FavoritesContext`), and interface preferences (`UiContext`). Axios (`src/services/http.ts`) attaches the API bearer token and routes `401` responses through a shared unauthorized handler.
+The application is a strict TypeScript SPA built with Vite 8, React 19, and Material UI v7. React Router v7 owns navigation. The shared TanStack `QueryClient` and domain hooks own server state; compact contexts hold the current authenticated session (`AuthContext`), cart/favorites relations (`CartContext`, `FavoritesContext`), and interface preferences (`UiContext`). `RequireAuth` gates protected routes and publishes the guaranteed signed-in user to its subtree through `AuthenticatedUserContext` (`useAuthenticatedUser`), so protected screens never handle an anonymous user. Axios (`src/services/http.ts`) attaches the API bearer token and routes `401` responses through a shared unauthorized handler.
 
 ## Directory Structure
 

@@ -24,10 +24,8 @@ import { ROUTES } from '@/constants';
 import type { BookReviews } from '@/interfaces/models';
 import { accountService } from '@/modules/account/services/account.service';
 import { useAuth } from '@/modules/auth/context/AuthContext';
-import {
-  BookReviewForm,
-  type ReviewFormValues,
-} from '@/modules/catalog/components/BookReviewForm';
+import { BookReviewForm } from '@/modules/catalog/components/BookReviewForm';
+import type { ReviewFormValues } from '@/modules/catalog/types';
 import { useUi } from '@/modules/ui/context/UiContext';
 import { getLocalizedErrorMessage } from '@/utils/error';
 import { formatDate, getUserInitials } from '@/utils/format';

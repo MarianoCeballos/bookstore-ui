@@ -1,13 +1,13 @@
-import { Box, Button, Stack, Typography } from '@mui/material';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import { Box, Button, Paper, Stack, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants';
 import type { AdminStats } from '@/interfaces/models';
 import { DataTable } from '@/modules/admin/components/DataTable';
+import { RECENT_ORDERS_LIMIT } from '@/modules/admin/constants';
 import { useUi } from '@/modules/ui/context/UiContext';
 import { formatCurrency, formatDate } from '@/utils/format';
-
-const RECENT_ORDERS_LIMIT = 5;
 
 export function AdminRecentOrders({
   payments,
@@ -22,31 +22,25 @@ export function AdminRecentOrders({
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
-    .slice(0, RECENT_ORDERS_LIMIT)
-    .map((order) => [
-      formatDate(order.createdAt, language, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-      order.items,
-      formatCurrency(order.total, language),
-    ]);
+    .slice(0, RECENT_ORDERS_LIMIT);
 
   return (
-    <Box sx={{ minWidth: 0 }}>
+    <Paper variant="outlined" sx={{ p: { xs: 2, sm: 2.5 }, borderRadius: 2 }}>
       <Stack
         direction="row"
-        spacing={2}
+        spacing={1}
         sx={{
-          mb: 2,
           alignItems: 'center',
           justifyContent: 'space-between',
+          mb: 1.5,
         }}
       >
-        <Typography variant="h6">{t('recentOrders')}</Typography>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', color: 'text.secondary' }}>
+            <ReceiptLongOutlinedIcon fontSize="small" />
+          </Box>
+          <Typography variant="h6">{t('recentOrders')}</Typography>
+        </Stack>
         <Button
           component={Link}
           to={ROUTES.ADMIN_SECTION('orders')}
@@ -55,11 +49,41 @@ export function AdminRecentOrders({
           {t('viewAllOrders')}
         </Button>
       </Stack>
+
       <DataTable
-        headers={[t('publishedDate'), t('purchases'), t('total')]}
+        variant="plain"
         rows={rows}
+        getRowKey={(order, index) => `${order.createdAt}-${index}`}
         emptyMessage={t('noSalesYet')}
+        columns={[
+          {
+            id: 'publishedDate',
+            label: t('publishedDate'),
+            sortValue: (order) => new Date(order.createdAt).getTime(),
+            render: (order) =>
+              formatDate(order.createdAt, language, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              }),
+          },
+          {
+            id: 'purchases',
+            label: t('purchases'),
+            align: 'right',
+            sortValue: (order) => order.items,
+          },
+          {
+            id: 'total',
+            label: t('total'),
+            align: 'right',
+            sortValue: (order) => Number(order.total),
+            render: (order) => formatCurrency(order.total, language),
+          },
+        ]}
       />
-    </Box>
+    </Paper>
   );
 }

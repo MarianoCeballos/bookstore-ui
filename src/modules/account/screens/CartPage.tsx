@@ -25,7 +25,7 @@ import { PageStateCard } from '@/components/PageStateCard';
 import { ROUTES } from '@/constants';
 import type { Book } from '@/interfaces/models';
 import { useCart } from '@/modules/account/context/CartContext';
-import { paymentsService } from '@/modules/payments/services/payments.service';
+import { useCartCheckout } from '@/modules/account/hooks/useCartCheckout';
 import { useUi } from '@/modules/ui/context/UiContext';
 import { getLocalizedErrorMessage } from '@/utils/error';
 import { formatCurrency } from '@/utils/format';
@@ -34,13 +34,18 @@ export default function CartPage() {
   const { t } = useTranslation();
   const { language } = useUi();
   const { items, loading, add, remove } = useCart();
+  const {
+    gift,
+    recipient,
+    recipientError,
+    error,
+    isCheckingOut,
+    toggleGift,
+    updateRecipient,
+    checkout,
+  } = useCartCheckout();
 
-  const [gift, setGift] = useState(false);
-  const [recipient, setRecipient] = useState('');
-  const [recipientError, setRecipientError] = useState('');
-  const [error, setError] = useState('');
   const [removingId, setRemovingId] = useState<number | null>(null);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const total = items.reduce((sum, item) => sum + Number(item.price), 0);
 
@@ -64,35 +69,6 @@ export default function CartPage() {
       // Handled by toast.promise
     } finally {
       setRemovingId(null);
-    }
-  };
-
-  const handleCheckout = async () => {
-    setError('');
-    setRecipientError('');
-
-    const trimmedRecipient = recipient.trim();
-    if (gift && !trimmedRecipient) {
-      const validationMessage = t('validationGiftRecipientRequired');
-      setRecipientError(validationMessage);
-      toast.warning(validationMessage);
-      return;
-    }
-
-    setIsCheckingOut(true);
-    try {
-      const result = await paymentsService.checkout(
-        gift,
-        gift ? trimmedRecipient : undefined,
-      );
-      window.location.assign(
-        `https://www.mercadopago.com/checkout/v1/redirect?pref_id=${encodeURIComponent(result.preferenceId)}`,
-      );
-    } catch (err) {
-      const message = getLocalizedErrorMessage(err, t);
-      setError(message);
-      toast.error(message);
-      setIsCheckingOut(false);
     }
   };
 
@@ -249,12 +225,7 @@ export default function CartPage() {
               control={
                 <Checkbox
                   checked={gift}
-                  onChange={(event) => {
-                    setGift(event.target.checked);
-                    if (!event.target.checked) {
-                      setRecipientError('');
-                    }
-                  }}
+                  onChange={(event) => toggleGift(event.target.checked)}
                   disabled={isCheckingOut}
                 />
               }
@@ -267,10 +238,7 @@ export default function CartPage() {
                 sx={{ mt: 1.5 }}
                 label={t('giftRecipient')}
                 value={recipient}
-                onChange={(event) => {
-                  setRecipient(event.target.value);
-                  if (recipientError) setRecipientError('');
-                }}
+                onChange={(event) => updateRecipient(event.target.value)}
                 error={Boolean(recipientError)}
                 helperText={recipientError || t('giftRecipientHelper')}
                 disabled={isCheckingOut}
@@ -302,7 +270,7 @@ export default function CartPage() {
                     <ShoppingCartCheckoutRoundedIcon />
                   )
                 }
-                onClick={() => void handleCheckout()}
+                onClick={() => void checkout()}
               >
                 {isCheckingOut ? t('processingCheckout') : t('continuePayment')}
               </Button>
